@@ -14,6 +14,9 @@ Author URI: http://www.davelester.org
 add_action('admin_menu', 'wpbadger_admin_menu');
 register_activation_hook(__FILE__,'wpbadger_install');
 
+require_once( dirname(__FILE__) . '/includes/badges.php' );
+require_once( dirname(__FILE__) . '/includes/awards.php' );
+
 global $wpbadger_db_version;
 $wpbadger_db_version = "0.0.5";
 
@@ -158,6 +161,8 @@ function wpbadger_add_badge()
 			$image_path = $_REQUEST['wpbadger_badge_image_path'];
 			$description = $_REQUEST['wpbadger_badge_description'];
 			$criteria = $_REQUEST['wpbadger_badge_criteria'];
+
+
 
 			$badges_table_name = $wpdb->prefix . "wpbadger_badges";
 
