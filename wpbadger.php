@@ -57,11 +57,11 @@ function wpbadger_admin_menu()
 {
 	add_menu_page('WPBadger','WPBadger','level_8','wpbadger','wpbadger_manage','',98);
 	if (wpbadger_configured()) {
-		add_submenu_page('wpbadger','WPBadger | Badges','Manage Badges','level_8','wpbadger_badges','wpbadger_manage_badges');
-		add_submenu_page('wpbadger_badges', 'WPBadger | Add a Badge','Add Badge','level_8','wpbadger_add_badge','wpbadger_add_badge');
-		add_submenu_page('wpbadger','WPBadger | Awarded Badges','Manage Awarded Badges','level_8','wpbadger_manage_awards','wpbadger_manage_awards');
-		add_submenu_page('wpbadger_awards', 'WPBadger | Award a Badge','Award A Badge','level_8','wpbadger_award_badge','wpbadger_award_badge');
-		add_submenu_page('wpbadger','WPBadger | Configure Plugin','Configure Plugin','level_8','wpbadger_configure_plugin','wpbadger_configure_plugin');	
+		add_submenu_page('wpbadger','WPBadger | Badges','Manage Badges','manage_options','wpbadger_badges','wpbadger_manage_badges');
+		add_submenu_page('wpbadger_badges', 'WPBadger | Add a Badge','Add Badge','manage_options','wpbadger_add_badge','wpbadger_add_badge');
+		add_submenu_page('wpbadger','WPBadger | Awarded Badges','Manage Awarded Badges','manage_options','wpbadger_manage_awards','wpbadger_manage_awards');
+		add_submenu_page('wpbadger_awards', 'WPBadger | Award a Badge','Award A Badge','manage_options','wpbadger_award_badge','wpbadger_award_badge');
+		add_submenu_page('wpbadger','WPBadger | Configure Plugin','Configure Plugin','manage_options','wpbadger_configure_plugin','wpbadger_configure_plugin');
 	}
 }
 
