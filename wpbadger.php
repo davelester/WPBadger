@@ -220,11 +220,16 @@ function wpbadger_admin_header($tab)
 	<div id="icon-options-general" class="icon32"><br /></div>
 	<h2 class="nav-tab-wrapper">
 		<?php
-		$pages = array(	array('wpbadger','WPBadger'),
-						array('wpbadger_badges','Manage Badges'),
-						array('wpbadger_manage_awards','Manage Awarded Badges'),
-						array('wpbadger_configure_plugin','Configure Plugin'));
-					
+		$pages = array(	array('wpbadger','WPBadger') );
+
+		if ( wpbadger_configured() ) {
+			$pages = array_merge( $pages, array(
+				array('wpbadger_badges','Manage Badges'),
+				array('wpbadger_manage_awards','Manage Awarded Badges'),
+				array('wpbadger_configure_plugin','Configure Plugin')
+			) );
+		}
+
 		foreach ($pages as $page) {
 			// Mark the selected tab as active
 			if ($tab == $page[1]) { 
