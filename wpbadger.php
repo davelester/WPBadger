@@ -34,7 +34,7 @@ function wpbadger_install()
 	criteria varchar(55) NOT NULL,
 	UNIQUE KEY id (badge_id)
 	);";
- 
+
 	$awardedBadgesSql = "CREATE TABLE $awarded_badges_table_name (
 	award_id mediumint(9) NOT NULL AUTO_INCREMENT,
 	email_address varchar(100) NOT NULL,
@@ -83,7 +83,7 @@ function wpbadger_award_badge()
 
 			// Generate the recipient using the WordPress salt. foo is a placeholder
 			$recipient = 'foo';
-			
+
 			// Issued on should be retrieving using unix timestamp (or similar method)
 			$issued_on = '';
 
@@ -111,12 +111,12 @@ function wpbadger_award_badge()
 				<?php
 					$badges_table_name = $wpdb->prefix . "wpbadger_badges";
 					$badges = $wpdb->get_results("SELECT * FROM $badges_table_name");
-				
+
 					foreach ($badges as $badge) {
 						echo "<option id='wpbadger_badge_id' value='$badge->badge_id'>$badge->name (Version $badge->version)</option>";
 					}
 				?>
-				</select>        	
+				</select>
 	        </td>
 	        </tr>
 
@@ -166,14 +166,14 @@ function wpbadger_add_badge()
 		} else {
 			echo "All fields must be filled out in order to add a new badge.";
 		}
-		
+
 		/* 	@todo: after badge is awarded, need to retrieve issue_id from mysql (or maybe it's set ahead of time using rand())
 		   	and using that issue_id and the email address, the user is notified that a badge has been awarded */
-		
+
 	}
 	wpbadger_admin_header('Manage Badges');
 	?>
-	
+
 	<h2>Add a New Badge</h2>
 
 	<form method="POST" action="" name="wpbadger_config">
@@ -188,7 +188,7 @@ function wpbadger_add_badge()
 	        <th scope="row">Image Path</th>
 	        <td><input type="text" name="wpbadger_badge_image_path" /></td>
 	        </tr>
-	
+
 			<tr valign="top">
 	        <th scope="row">Version</th>
 	        <td><input type="text" name="wpbadger_badge_version" /></td>
@@ -232,8 +232,8 @@ function wpbadger_admin_header($tab)
 
 		foreach ($pages as $page) {
 			// Mark the selected tab as active
-			if ($tab == $page[1]) { 
-				$activeClass = " nav-tab-active"; 
+			if ($tab == $page[1]) {
+				$activeClass = " nav-tab-active";
 			} else {
 				$activeClass = "";
 			}
@@ -250,9 +250,9 @@ function wpbadger_manage()
 ?>
 
 	<h2>Dashboard</h2>
-	
+
 	<p>The utility of a dashboard may depend on the number of badges being issued from a WordPress installation, and how frequently badges are being given out.</p>
-	
+
 	<p>Have a suggestion for what could be included here? Go ahead and add it to the <a href="https://github.com/davelester/wpbadger/wiki">project's Github wiki</a>.</p>
 <?php
 }
@@ -261,11 +261,11 @@ function wpbadger_manage_badges()
 {
 	wpbadger_admin_header('Manage Badges');
 	?>
-	
+
 	<div id="wpbadger-manage-badges">
 		<?php
-			global $wpdb;	
-		
+			global $wpdb;
+
 			$badges_table_name = $wpdb->prefix . "wpbadger_badges";
 			$num_of_badges = $wpdb->get_var("SELECT COUNT(*) FROM $badges_table_name");
 		?>
@@ -293,7 +293,7 @@ function wpbadger_manage_badges()
 				{?>
 
 			<tr id="post-1" class="post-1 post type-post status-publish format-standard hentry category-uncategorized alternate iedit author-self" valign="top">
-				<td class="name page-title column-title"><strong><a href=""><?php echo $result->name; ?></a></strong></td>			
+				<td class="name page-title column-title"><strong><a href=""><?php echo $result->name; ?></a></strong></td>
 				<td class="image-path column-tags"><?php echo $result->image_path; ?></td>
 				<td class="version column-author"><?php echo $result->version; ?></td>
 				<td class="description column-categories"><?php echo $result->description; ?></td>
@@ -343,7 +343,7 @@ function wpbadger_manage_awards()
 			?>
 			<br />
 			<p><strong><?php echo $num_of_awarded_badges; ?></strong> badges have been awarded. <a href="admin.php?page=wpbadger_award_badge">Award new badges</a></p>
-			
+
 			<table class="wp-list-table widefat" cellspacing="0">
 				<thead>
 				<tr>
@@ -365,7 +365,7 @@ function wpbadger_manage_awards()
 				?>
 
 				<tr id="post-1" class="post-1 post type-post status-publish format-standard hentry category-uncategorized alternate iedit author-self" valign="top">
-					<td class="issued-on"><a href=""><?php echo $result->issued_on; ?></a></td>			
+					<td class="issued-on"><a href=""><?php echo $result->issued_on; ?></a></td>
 					<td class="badge"><?php echo $result->badge_id; ?></td>
 					<td class="email-address"><?php echo $result->email_address; ?></td>
 				</tr>
@@ -390,7 +390,7 @@ function wpbadger_manage_awards()
 // Checks two mandatory fields of configured. If options are empty or don't exist, return FALSE
 function wpbadger_configured()
 {
-	if (get_option('wpbadger_config_origin') && get_option('wpbadger_config_name')) { 
+	if (get_option('wpbadger_config_origin') && get_option('wpbadger_config_name')) {
 		return TRUE;
 	} else {
 		return FALSE;
@@ -408,7 +408,7 @@ if ($_POST['save']) {
 		update_option('wpbadger_config_name', $_REQUEST['wpbadger_config_name']);
 		$success = TRUE;
 	}
-	
+
 	if ($success) {
 		echo "Options successfully updated";
 	}
@@ -426,7 +426,7 @@ wpbadger_admin_header('Configure Plugin');
         <th scope="row">Origin</th>
         <td><input type="text" name="wpbadger_config_origin" value="<?php echo get_option('wpbadger_config_origin'); ?>" /></td>
         </tr>
-         
+
         <tr valign="top">
         <th scope="row">Issuing Agent Name</th>
         <td><input type="text" name="wpbadger_config_name" value="<?php echo get_option('wpbadger_config_name'); ?>" /></td>
@@ -445,9 +445,9 @@ wpbadger_admin_header('Configure Plugin');
 		<tr valign="top">
 		<th scope="row">Badge Award Email Text</th>
 		<td><textarea name="wpbadger_config_award_email_text" id="wpbadger_config_award_email_text" rows="4" cols="30"></textarea></td>
-		</tr>		
+		</tr>
     </table>
-    
+
     <p class="submit">
     <input type="submit" class="button-primary" name="save" value="<?php _e('Save Changes') ?>" />
     </p>
