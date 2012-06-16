@@ -55,7 +55,7 @@ function wpbadger_install()
 
 function wpbadger_admin_menu()
 {
-	add_menu_page('WPBadger','WPBadger','level_8','wpbadger','wpbadger_manage','',98);
+	add_menu_page('WPBadger','WPBadger','manage_options','wpbadger','wpbadger_manage','',98);
 	if (wpbadger_configured()) {
 		add_submenu_page('wpbadger','WPBadger | Badges','Manage Badges','manage_options','wpbadger_badges','wpbadger_manage_badges');
 		add_submenu_page('wpbadger_badges', 'WPBadger | Add a Badge','Add Badge','manage_options','wpbadger_add_badge','wpbadger_add_badge');
@@ -220,13 +220,12 @@ function wpbadger_admin_header($tab)
 	<div id="icon-options-general" class="icon32"><br /></div>
 	<h2 class="nav-tab-wrapper">
 		<?php
-		$pages = array(	array('wpbadger','WPBadger') );
+		$pages = array(	array('wpbadger','WPBadger'), array('wpbadger_configure_plugin','Configure Plugin') );
 
 		if ( wpbadger_configured() ) {
 			$pages = array_merge( $pages, array(
 				array('wpbadger_badges','Manage Badges'),
-				array('wpbadger_manage_awards','Manage Awarded Badges'),
-				array('wpbadger_configure_plugin','Configure Plugin')
+				array('wpbadger_manage_awards','Manage Awarded Badges')
 			) );
 		}
 
