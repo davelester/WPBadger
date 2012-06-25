@@ -20,26 +20,6 @@ require_once( dirname(__FILE__) . '/includes/awards.php' );
 global $wpbadger_db_version;
 $wpbadger_db_version = "0.0.5";
 
-add_filter( 'template_include', 'award_template_check' );
-function award_template_check() {
-	global $template;
-
-	if (is_single() ){
-		// Get query information
-		$accept = get_query_var( 'accept' );
-
-		// Check if post type 'Awards'
-		if ( 'award' == get_post_type() ) {
-			
-			$template_file = dirname(__FILE__) . '/includes/awards_template.php';
-			return $template_file;
-		}
-	}
-
-	return $template;
-}
-
-
 function wpbadger_install()
 {
 	global $wpdb;
