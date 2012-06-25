@@ -21,15 +21,15 @@ class WPBadger_Badge_Schema {
 		$labels = array(
 			'name' => _x('Badges', 'post type general name'),
 			'singular_name' => _x('Badge', 'post type singular name'),
-			'add_new' => _x('Add New', 'book'),
+			'add_new' => _x('Add New', 'badge'),
 			'add_new_item' => __('Add New Badge'),
-			'edit_item' => __('Edit Book'),
-			'new_item' => __('New Book'),
-			'all_items' => __('All Books'),
-			'view_item' => __('View Book'),
-			'search_items' => __('Search Books'),
-			'not_found' =>  __('No books found'),
-			'not_found_in_trash' => __('No books found in Trash'),
+			'edit_item' => __('Edit Badge'),
+			'new_item' => __('New Badge'),
+			'all_items' => __('All Badges'),
+			'view_item' => __('View Badge'),
+			'search_items' => __('Search Badges'),
+			'not_found' =>  __('No badges found'),
+			'not_found_in_trash' => __('No badges found in Trash'),
 			'parent_item_colon' => '',
 			'menu_name' => 'Badges'
 		);

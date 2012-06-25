@@ -24,15 +24,15 @@ class WPbadger_Award_Schema {
 		$labels = array(
 			'name' => _x('Awards', 'post type general name'),
 			'singular_name' => _x('Award', 'post type singular name'),
-			'add_new' => _x('Add New', 'book'),
+			'add_new' => _x('Add New', 'award'),
 			'add_new_item' => __('Add New Award'),
-			'edit_item' => __('Edit Book'),
-			'new_item' => __('New Book'),
-			'all_items' => __('All Books'),
-			'view_item' => __('View Book'),
-			'search_items' => __('Search Books'),
+			'edit_item' => __('Edit Award'),
+			'new_item' => __('New Award'),
+			'all_items' => __('All Award'),
+			'view_item' => __('View Award'),
+			'search_items' => __('Search Awards'),
 			'not_found' =>  __('No books found'),
-			'not_found_in_trash' => __('No books found in Trash'),
+			'not_found_in_trash' => __('No awards found in Trash'),
 			'parent_item_colon' => '',
 			'menu_name' => 'Awards'
 		);
@@ -46,7 +46,7 @@ class WPbadger_Award_Schema {
 				'with_front' => false
 			),
 			'capability_type' => 'post',
-			'has_archive' => true,
+			'has_archive' => false,
 			'hierarchical' => false,
 			'supports' => array( 'title', 'author', 'thumbnail' )
 		);
