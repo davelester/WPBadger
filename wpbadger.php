@@ -58,15 +58,8 @@ function wpbadger_install()
 
 function wpbadger_admin_menu()
 {
-	add_menu_page('WPBadger','WPBadger','manage_options','wpbadger','wpbadger_manage','',98);
-	add_submenu_page('wpbadger','WPBadger | Configure Plugin','Configure Plugin','manage_options','wpbadger_configure_plugin','wpbadger_configure_plugin');
-
-	if (wpbadger_configured()) {
-		add_submenu_page('wpbadger','WPBadger | Badges','Manage Badges','manage_options','wpbadger_badges','wpbadger_manage_badges');
-		add_submenu_page('wpbadger_badges', 'WPBadger | Add a Badge','Add Badge','manage_options','wpbadger_add_badge','wpbadger_add_badge');
-		add_submenu_page('wpbadger','WPBadger | Awarded Badges','Manage Awarded Badges','manage_options','wpbadger_manage_awards','wpbadger_manage_awards');
-		add_submenu_page('wpbadger_awards', 'WPBadger | Award a Badge','Award A Badge','manage_options','wpbadger_award_badge','wpbadger_award_badge');
-	}
+	add_submenu_page('options-general.php','Configure WPBadger Plugin','WPBadger Config','manage_options','wpbadger_configure_plugin','wpbadger_configure_plugin');
+	add_submenu_page('edit.php?post_type=award','WPBadger | Bulk Award Badges','Bulk Award Badges','manage_options','wpbadger_bulk_awards','wpbadger_bulk_awards');
 }
 
 function wpbadger_award_badge()
@@ -231,7 +224,7 @@ function wpbadger_admin_header($tab)
 		if ( wpbadger_configured() ) {
 			$pages = array_merge( $pages, array(
 				array('wpbadger_badges','Manage Badges'),
-				array('wpbadger_manage_awards','Manage Awarded Badges')
+				array('wpbadger_bulk_awards','Manage Awarded Badges')
 			) );
 		}
 
@@ -336,7 +329,7 @@ function wpbadger_json_assertion() {
 	// Call database to build a JSON file given the award information of a specified ID. include error JSON if it fails.
 }
 
-function wpbadger_manage_awards()
+function wpbadger_bulk_awards()
 {
 	wpbadger_admin_header('Manage Awarded Badges');
 	?>
