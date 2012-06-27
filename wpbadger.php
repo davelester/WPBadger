@@ -35,6 +35,12 @@ function wpbadger_admin_menu()
 
 function wpbadger_bulk_award_badges()
 {
+wpbadger_admin_header('Manage Awarded Badges');
+?>
+
+<h2>Award Badges in Bulk</h2>
+
+<?php
 	// Has to be rewritten to handle custom post types
 	
 	global $wpdb;
@@ -59,16 +65,15 @@ function wpbadger_bulk_award_badges()
 			$awarded_badges_table_name = $wpdb->prefix . "wpbadger_awarded_badges";
 
 			$wpdb->insert( $awarded_badges_table_name, array( 'badge_id' => $badge_id, 'email_address' => $email_address, 'recipient' => $recipient, 'issued_on' => $issued_on, 'expires' => $expires, 'evidence' => $evidence ) );
-			echo "success!!!";
+
+			// If successful, redirect to the list of awards
+			// @todo: check that this works
+			wp_redirect('edit.php?post_type=award');
 		} else {
-			echo "Badge award was unsuccessful. It is necessary to specify a badge and email address.";
+			echo "echo <div id='message' class='updated'>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
 		}
 	}
-
-	wpbadger_admin_header('Manage Awarded Badges');
 ?>
-
-	<h2>Award Badges in Bulk</h2>
 
 	<form method="POST" action="" name="wpbadger_config">
 
@@ -121,17 +126,6 @@ function wpbadger_admin_header($tab)
 <?php
 }
 
-function wpbadger_accept_award_page()
-{
-	echo "You have been awarded the _____ badge! Choose to accept this badge and add it to your badge backpack, or decline.";
-	// On this public page, create div to echo the badge criteria, as well as the PNG of the image
-}
-
-function wpbadger_json_assertion() {
-	header('Content-Type: application/json');
-	// Call database to build a JSON file given the award information of a specified ID. include error JSON if it fails.
-}
-
 // Checks two mandatory fields of configured. If options are empty or don't exist, return FALSE
 function wpbadger_configured()
 {
@@ -143,7 +137,12 @@ function wpbadger_configured()
 }
 
 function wpbadger_configure_plugin()
-{
+{ 
+	wpbadger_admin_header('Configure Plugin');
+?>
+<h2>WPBadger Configuration</h2>
+
+<?php
 if ($_POST['save']) {
 	if ($_REQUEST['wpbadger_config_origin']) {
 		update_option('wpbadger_config_origin', $_REQUEST['wpbadger_config_origin']);
@@ -155,14 +154,10 @@ if ($_POST['save']) {
 	}
 
 	if ($success) {
-		echo "Options successfully updated";
+		echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
 	}
 }
-
-wpbadger_admin_header('Configure Plugin');
 ?>
-
-<h2>Configuration</h2>
 
 <form method="POST" action="" name="wpbadger_config">
 
