@@ -213,7 +213,7 @@ add_action( 'save_post', 'wpbadger_award_send_email' );
 
 function wpbadger_award_send_email( $post_id ) {
 	//verify post is not a revision
-	if ( !wp_is_post_revision( $post_id ) && (get_post_type( $post_id) == 'award')) {
+	if ( !wp_is_post_revision( $post_id ) && ('award' == get_post_type( $post_id))) {
 
 		$post_title = get_the_title( $post_id );
 		$post_url = get_permalink( $post_id );
@@ -226,4 +226,14 @@ function wpbadger_award_send_email( $post_id ) {
 		
 	}
 }
+
+add_filter( 'user_can_richedit', 'wpbadger_disable_wysiwyg_for_awards' );
+
+function wpbadger_disable_wysiwyg_for_awards( $default ) {
+    global $post;
+    if ( 'award' == get_post_type( $post ) )
+        return false;
+    return $default;
+}
+
 ?>

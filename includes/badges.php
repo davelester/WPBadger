@@ -122,4 +122,13 @@ function wpbadger_change_badge_image_meta_box() {
 	'low');
 }
 
+add_filter( 'user_can_richedit', 'wpbadger_disable_wysiwyg_for_badges' );
+
+function wpbadger_disable_wysiwyg_for_badges( $default ) {
+    global $post;
+    if ( 'badge' == get_post_type( $post ) )
+        return false;
+    return $default;
+}
+
 ?>
