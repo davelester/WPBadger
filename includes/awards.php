@@ -188,9 +188,9 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 	}
 }
 
-add_filter( 'template_include', 'award_template_check' );
+add_filter( 'template_include', 'wpbadger_award_template_check' );
 
-function award_template_check() {
+function wpbadger_award_template_check() {
 	global $template;
 
 	if (is_single() ){
@@ -199,12 +199,31 @@ function award_template_check() {
 
 		// Check if post type 'Awards'
 		if ( 'award' == get_post_type() ) {
-			
-			$template_file = dirname(__FILE__) . '/includes/awards_template.php';
+			$template_file = dirname(__FILE__) . '/awards_template.php';
 			return $template_file;
 		}
 	}
 
 	return $template;
+}
+
+//add_action( 'publish_post', 'wpbadger_award_send_email' );
+add_action( 'save_post', 'wpbadger_award_send_email' );
+//add_action( 'update_post', 'wpbadger_award_send_email' );
+
+function wpbadger_award_send_email( $post_id ) {
+	//verify post is not a revision
+	if ( !wp_is_post_revision( $post_id ) && (get_post_type( $post_id) == 'award')) {
+
+		$post_title = get_the_title( $post_id );
+		$post_url = get_permalink( $post_id );
+		$subject = 'Congratulations! You\'ve been awarded a badge!';
+
+		$message = "Winner Winner chicken dinner! Please visit the link to redeem your badge.\n\n";
+		$message .= "<a href='". $post_url. "'>" .$post_title. "</a>\n\n";
+
+		wp_mail( 'davelester@gmail.com', $subject, $message );
+		
+	}
 }
 ?>
