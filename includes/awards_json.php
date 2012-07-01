@@ -12,10 +12,10 @@
     "description": "Knows the difference between a <section> and an <article>",
     "criteria": "/badges/html5-basic",
     "issuer": {
-      "origin": "http://p2pu.org",
-      "name": "P2PU",
-      "org": "School of Webcraft",
-      "contact": "admin@p2pu.org"
+      "origin": "<?php echo get_bloginfo('siteurl')?>",
+      "name": "<?php echo get_option('wpbadger_issuer_name'); ?>",
+      "org": "<?php echo get_option('wpbadger_issuer_org'); ?>",
+      "contact": "<?php echo get_option('wpbadger_issuer_contact'); ?>"
    }
   }
 }
