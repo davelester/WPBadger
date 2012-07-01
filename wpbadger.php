@@ -144,12 +144,19 @@ function wpbadger_configure_plugin()
 
 <?php
 if ($_POST['save']) {
-	if ($_REQUEST['wpbadger_config_origin']) {
-		update_option('wpbadger_config_origin', $_REQUEST['wpbadger_config_origin']);
+
+	if ($_REQUEST['wpbadger_issuer_name']) {
+		update_option('wpbadger_issuer_name', $_REQUEST['wpbadger_issuer_name']);
 		$success = TRUE;
 	}
-	if ($_REQUEST['wpbadger_config_name']) {
-		update_option('wpbadger_config_name', $_REQUEST['wpbadger_config_name']);
+
+	if ($_REQUEST['wpbadger_issuer_org']) {
+		update_option('wpbadger_issuer_org', $_REQUEST['wpbadger_issuer_org']);
+		$success = TRUE;
+	}
+	
+	if ($_REQUEST['wpbadger_issuer_contact']) {
+		update_option('wpbadger_issuer_contact', $_REQUEST['wpbadger_issuer_contact']);
 		$success = TRUE;
 	}
 
@@ -162,24 +169,20 @@ if ($_POST['save']) {
 <form method="POST" action="" name="wpbadger_config">
 
     <table class="form-table">
-        <tr valign="top">
-        <th scope="row">Origin</th>
-        <td><input type="text" name="wpbadger_config_origin" value="<?php echo get_option('wpbadger_config_origin'); ?>" /></td>
-        </tr>
 
         <tr valign="top">
         <th scope="row">Issuing Agent Name</th>
-        <td><input type="text" name="wpbadger_config_name" value="<?php echo get_option('wpbadger_config_name'); ?>" /></td>
+        <td><input type="text" name="wpbadger_issuer_name" value="<?php echo get_option('wpbadger_issuer_name'); ?>" /></td>
         </tr>
 
         <tr valign="top">
         <th scope="row">Issuing Organization</th>
-        <td><input type="text" name="wpbadger_config_org" value="<?php echo get_option('wpbadger_config_org'); ?>" /></td>
+        <td><input type="text" name="wpbadger_issuer_org" value="<?php echo get_option('wpbadger_issuer_org'); ?>" /></td>
         </tr>
 
         <tr valign="top">
         <th scope="row">Contact Email Address</th>
-        <td><input type="text" name="wpbadger_config_contact" value="<?php echo get_option('wpbadger_config_contact'); ?>" /></td>
+        <td><input type="text" name="wpbadger_issuer_contact" value="<?php echo get_option('wpbadger_issuer_contact'); ?>" /></td>
         </tr>
 
 		<tr valign="top">
