@@ -129,7 +129,7 @@ function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
 	<?php wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' ); ?>
 	
 	<p>
-	<select name="wpbadger_badge_id" id="wpbadger_badge_id">
+	<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">
 	
 	<?php $query = new WP_Query( array( 'post_type' => 'badge' ) );
 	
@@ -164,7 +164,7 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 		return $post_id;
 
 	$chosen_badge_new_meta_value = $_POST['wpbadger-award-choose-badge'];
-	$chosen_badge_meta_key = 'wpbadger-badge-version';
+	$chosen_badge_meta_key = 'wpbadger-award-choose-badge';
 	$chosen_badge_meta_value = get_post_meta( $post_id, $meta_key, true );
 
 	$email_new_meta_value = $_POST['wpbadger-award-email-address'];
