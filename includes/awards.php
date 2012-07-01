@@ -63,6 +63,7 @@ class WPbadger_Award_Schema {
 	 */
 	function add_rewrite_tags() {
 		add_rewrite_tag( '%%accept%%', '([1]{1,})' );
+		add_rewrite_tag( '%%json%%', '([1]{1,})' );
 		add_rewrite_tag( '%%reject%%', '([1]{1,})' );
 	}
 
@@ -73,19 +74,18 @@ class WPbadger_Award_Schema {
 	 */
 	function generate_rewrite_rules( $wp_rewrite ) {
 		$rules = array(
-			/**
-			 * Top level
-			 */
-
-			// Create
+			// Create rewrite rules for each action
+			'awards/([^/]+)/?$' =>
+				'index.php?post_type=' . $this->get_post_type_name() . '&name=' . $wp_rewrite->preg_index( 1 ),
 			'awards/([^/]+)/accept/?$' =>
 				'index.php?post_type=' . $this->get_post_type_name() . '&name=' . $wp_rewrite->preg_index( 1 ) . '&accept=1',
-
-
-
+			'awards/([^/]+)/json/?$' =>
+				'index.php?post_type=' . $this->get_post_type_name() . '&name=' . $wp_rewrite->preg_index( 1 ) . '&json=1',
+			'awards/([^/]+)/reject/?$' =>
+				'index.php?post_type=' . $this->get_post_type_name() . '&name=' . $wp_rewrite->preg_index( 1 ) . '&reject=1',
 		);
 
-		// Merge bbPress rules with existing
+		// Merge new rewrite rules with existing
 		$wp_rewrite->rules = array_merge( $rules, $wp_rewrite->rules );
 
 		return $wp_rewrite;
@@ -193,12 +193,20 @@ add_filter( 'template_include', 'wpbadger_award_template_check' );
 function wpbadger_award_template_check() {
 	global $template;
 
-	if (is_single() ){
-		// Get query information
-		$accept = get_query_var( 'accept' );
+	// Get query information
+	$accept = get_query_var( 'accept' );
+	$json = get_query_var( 'json' );
+	$reject = get_query_var( 'reject' );
 
-		// Check if post type 'Awards'
-		if ( 'award' == get_post_type() ) {
+	// Check if post type 'Awards'
+	if ( 'award' == get_post_type() ) {
+		
+		if ($json) {
+			$template_file = dirname(__FILE__) . '/awards_json.php';
+			return $template_file;			
+		} elseif ($accept) {
+		} elseif ($reject) {			
+		} else {
 			$template_file = dirname(__FILE__) . '/awards_template.php';
 			return $template_file;
 		}
@@ -207,9 +215,7 @@ function wpbadger_award_template_check() {
 	return $template;
 }
 
-//add_action( 'publish_post', 'wpbadger_award_send_email' );
 add_action( 'save_post', 'wpbadger_award_send_email' );
-//add_action( 'update_post', 'wpbadger_award_send_email' );
 
 function wpbadger_award_send_email( $post_id ) {
 	//verify post is not a revision
@@ -223,7 +229,7 @@ function wpbadger_award_send_email( $post_id ) {
 		$message .= "<a href='". $post_url. "'>" .$post_title. "</a>\n\n";
 
 		wp_mail( 'davelester@gmail.com', $subject, $message );
-		
+
 	}
 }
 
