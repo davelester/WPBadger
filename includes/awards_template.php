@@ -21,7 +21,7 @@ $(document).ready(function() {
 	
 	//Function that issues the badge
 	$('.backPackLink').click(function() {
-		var assertionUrl = "http://localhost/~davelester/assertion.php";
+		var assertionUrl = "<?php echo get_permalink(); ?>json/";
        OpenBadges.issue([''+assertionUrl+''], function(errors, successes) { 
 					if (errors.length > 0 ) {
 						$('#errMsg').text('Error Message: '+ errors.toSource());
