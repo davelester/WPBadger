@@ -128,17 +128,24 @@ function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
 
 	<?php wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' ); ?>
 	
+	<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger-award-choose-badge', true );?>
+	
 	<p>
 	<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">
 	
-	<?php $query = new WP_Query( array( 'post_type' => 'badge' ) );
+	<?php 	
+	$query = new WP_Query( array( 'post_type' => 'badge' ) );
 	
 	while ( $query->have_posts() ) : $query->the_post();
-		echo '<li>';
-		echo "<option id='wpbadger-award-choose-badge' value='";
-		echo get_post_meta( $object->ID, 'wpbadger-badge-choose-badge', true );
-		echo "'>";
-		echo  the_title() . " (Version X)</option>";
+		$title_version = the_title(null, null, false) . " (Version X)";
+
+		if ($choose_badge_meta == $title_version) { 
+			$selected = " selected";
+		} else {
+			$selected = "";
+		}
+		echo "<option name='wpbadger-award-choose-badge'". $selected . ">";
+		echo $title_version . "</option>";
 	endwhile;
 	?>
 	
@@ -165,17 +172,15 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 
 	$chosen_badge_new_meta_value = $_POST['wpbadger-award-choose-badge'];
 	$chosen_badge_meta_key = 'wpbadger-award-choose-badge';
-	$chosen_badge_meta_value = get_post_meta( $post_id, $meta_key, true );
+	$chosen_badge_meta_value = get_post_meta( $post_id, $chosen_badge_meta_key, true );
 
 	$email_new_meta_value = $_POST['wpbadger-award-email-address'];
 	$email_meta_key = 'wpbadger-award-email-address';
-	$email_meta_value = get_post_meta( $post_id, $meta_key, true );
+	$email_meta_value = get_post_meta( $post_id, $email_meta_key, true );
 
-	if ( $chosen_badge_new_meta_value && '' == $chosen_badge_meta_value ) {
-		add_post_meta( $post_id, $chosen_badge_meta_key, $chosen_badge_new_meta_value, true );
-	} elseif ( $chosen_badge_new_meta_value && $chosen_badge_new_meta_value != $chosen_badge_meta_value ) {
+	if ( $chosen_badge_new_meta_value ) {
 		update_post_meta( $post_id, $chosen_badge_meta_key, $chosen_badge_new_meta_value );
-	} elseif ( '' == $chosen_badge_new_meta_value && $chosen_badge_meta_value ) {
+	} elseif ( '' == $chosen_badge_new_meta_value ) {
 		delete_post_meta( $post_id, $chosen_badge_meta_key, $chosen_badge_meta_value );
 	}
 	
