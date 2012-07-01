@@ -31,8 +31,8 @@ class WPbadger_Award_Schema {
 			'all_items' => __('All Award'),
 			'view_item' => __('View Award'),
 			'search_items' => __('Search Awards'),
-			'not_found' =>  __('No books found'),
-			'not_found_in_trash' => __('No awards found in Trash'),
+			'not_found' =>  __('No awards found'),
+			'not_found_in_trash' => __('No award found in Trash'),
 			'parent_item_colon' => '',
 			'menu_name' => 'Awards'
 		);
@@ -236,4 +236,22 @@ function wpbadger_disable_wysiwyg_for_awards( $default ) {
     return $default;
 }
 
+add_filter('title_save_pre', 'wpbadger_award_save_title');
+function wpbadger_award_save_title($my_post_title) {
+	if ($_POST['post_type'] == 'award') {
+		$new_title = 'ramalamadingdong';
+		$my_post_title = $new_title;		
+	}
+	return $my_post_title;
+}
+
+add_filter('slug_save_pre', 'wpbadger_award_save_slug');
+
+function wpbadger_award_save_slug($my_post_slug) {
+	if ($_POST['post_type'] == 'award') {
+		$new_slug = 'ramalamadingdong';
+		$my_post_slug = $new_slug;		
+	}
+	return $my_post_slug;
+}
 ?>
