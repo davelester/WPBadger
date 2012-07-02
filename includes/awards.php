@@ -225,15 +225,17 @@ add_action( 'wp_insert_post', 'wpbadger_award_send_email' );
 function wpbadger_award_send_email( $post_id ) {
 	// Verify that post has been published, and is an award
 	if (('award' == get_post_type($post_id)) && ('publish' == get_post_status ($post_id))) {
-
+		$email = get_post_meta($post_id, 'wpbadger-award-email-address', true);
+		$badge = split(' (', get_post_meta($post_id, 'wpbadger-award-choose-badge', true));
+		
 		$post_title = get_the_title( $post_id );
 		$post_url = get_permalink( $post_id );
-		$subject = 'Congratulations! You\'ve been awarded a badge!';
+		$subject = "Congratulations! You\'ve been awarded the \"$badge\" badge!";
 
 		$message = "Winner Winner chicken dinner! Please visit the link to redeem your badge.\n\n";
-		$message .= "<a href='". $post_url. "'>" .$post_title. "</a>\n\n";
+		$message .= $post_url . "\n\n";
 
-		wp_mail( 'davelester@gmail.com', $subject, $message );
+		wp_mail( $email_address, $subject, $message );
 
 	}
 }
