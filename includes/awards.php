@@ -225,7 +225,7 @@ add_action( 'wp_insert_post', 'wpbadger_award_send_email' );
 function wpbadger_award_send_email( $post_id ) {
 	// Verify that post has been published, and is an award
 	if (('award' == get_post_type($post_id)) && ('publish' == get_post_status ($post_id))) {
-		$email = get_post_meta($post_id, 'wpbadger-award-email-address', true);
+		$email_address = get_post_meta($post_id, 'wpbadger-award-email-address', true);
 		$badge = split(' (', get_post_meta($post_id, 'wpbadger-award-choose-badge', true));
 		
 		$post_title = get_the_title( $post_id );
