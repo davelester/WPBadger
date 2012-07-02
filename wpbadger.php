@@ -40,37 +40,42 @@ wpbadger_admin_header('Manage Awarded Badges');
 
 <h2>Award Badges in Bulk</h2>
 
-<?php
-	// Has to be rewritten to handle custom post types
-	
+<?php	
 	global $wpdb;
 
 	if ($_POST['save']) {
-		if ($_REQUEST['wpbadger_badge_id'] && $_REQUEST['wpbadger_award_email_address']) {
+		if ($_REQUEST['wpbadger-award-choose-badge'] && $_REQUEST['wpbadger_award_email_address']) {
 
-			$badge_id = $_REQUEST['wpbadger_badge_id'];
-			$email_address = $_REQUEST['wpbadger_award_email_address'];
+			$badge = $_REQUEST['wpbadger-award-choose-badge'];
+			$email_addresses = $_REQUEST['wpbadger_award_email_address'];
 			$evidence = $_REQUEST['wpbadger_award_evidence'];
 			$expires = $_REQUEST['wpbadger_award_expires'];
 
-			// Start off by accepting one email address at a time..
-			// eventually expand this to include batch listings of emails, split and verify correct email address formatting
+			$email_addresses = split(',', $email_addresses);
+			
+			foreach ($email_addresses as $email) {
+				$email = trim($email);
 
-			// Generate the recipient using the WordPress salt. foo is a placeholder
-			$recipient = 'foo';
+				// Insert a new post for each award
+				$post = array(
+					'post_content' => $evidence,
+					'post_status' => 'publish',
+					'post_type' => 'award',
+					'post_title' => $badge
+				);
 
-			// Issued on should be retrieving using unix timestamp (or similar method)
-			$issued_on = '';
-
-			$awarded_badges_table_name = $wpdb->prefix . "wpbadger_awarded_badges";
-
-			$wpdb->insert( $awarded_badges_table_name, array( 'badge_id' => $badge_id, 'email_address' => $email_address, 'recipient' => $recipient, 'issued_on' => $issued_on, 'expires' => $expires, 'evidence' => $evidence ) );
+				$post_id = wp_insert_post( $post, $wp_error );
+				
+				update_post_meta($post_id, 'wpbadger_award_email_address', $email);
+				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge);
+				update_post_meta($post_id, 'wpbadger_award_expires', $expires);
+			}
 
 			// If successful, redirect to the list of awards
 			// @todo: check that this works
 			wp_redirect('edit.php?post_type=award');
 		} else {
-			echo "echo <div id='message' class='updated'>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
+			echo "<div id='message' class='updated'>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
 		}
 	}
 ?>
@@ -81,22 +86,34 @@ wpbadger_admin_header('Manage Awarded Badges');
 	        <tr valign="top">
 	        <th scope="row">Choose Badge</th>
 	        <td>
-				<select name="wpbadger_badge_id" id="wpbadger_badge_id">
-				<?php
-					$badges_table_name = $wpdb->prefix . "wpbadger_badges";
-					$badges = $wpdb->get_results("SELECT * FROM $badges_table_name");
+				<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger-award-choose-badge', true );?>
 
-					foreach ($badges as $badge) {
-						echo "<option id='wpbadger_badge_id' value='$badge->badge_id'>$badge->name (Version $badge->version)</option>";
+				<p>
+				<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">
+
+				<?php 	
+				$query = new WP_Query( array( 'post_type' => 'badge' ) );
+
+				while ( $query->have_posts() ) : $query->the_post();
+					$title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
+
+					if ($choose_badge_meta == $title_version) { 
+						$selected = " selected";
+					} else {
+						$selected = "";
 					}
+					echo "<option name='wpbadger-award-choose-badge'". $selected . ">";
+					echo $title_version . "</option>";
+				endwhile;
 				?>
+
 				</select>
 	        </td>
 	        </tr>
 
 	        <tr valign="top">
-	        <th scope="row">Email Address</th>
-	        <td><input type="text" name="wpbadger_award_email_address" /></td>
+	        <th scope="row">Email Address (separated by commas)</th>
+	        <td><textarea name="wpbadger_award_email_address" id="wpbadger_award_email_address" rows="4" cols="30"></textarea></td>
 	        </tr>
 
 	        <tr valign="top">
