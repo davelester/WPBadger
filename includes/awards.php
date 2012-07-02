@@ -220,7 +220,7 @@ function wpbadger_award_template_check() {
 	return $template;
 }
 
-add_action( 'save_post', 'wpbadger_award_send_email' );
+add_action( 'wp_insert_post', 'wpbadger_award_send_email' );
 
 function wpbadger_award_send_email( $post_id ) {
 	//verify post is not a revision
@@ -260,7 +260,7 @@ add_filter('slug_save_pre', 'wpbadger_award_save_slug');
 
 function wpbadger_award_save_slug($my_post_slug) {
 	if ($_POST['post_type'] == 'award') {
-		$new_slug = 'ramalamadingdong';
+		$new_slug = '12345';
 		$my_post_slug = $new_slug;		
 	}
 	return $my_post_slug;
