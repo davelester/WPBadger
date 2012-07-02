@@ -137,7 +137,7 @@ function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
 	$query = new WP_Query( array( 'post_type' => 'badge' ) );
 	
 	while ( $query->have_posts() ) : $query->the_post();
-		$title_version = the_title(null, null, false) . " (Version X)";
+		$title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
 
 		if ($choose_badge_meta == $title_version) { 
 			$selected = " selected";
