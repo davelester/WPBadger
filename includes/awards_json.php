@@ -26,8 +26,8 @@ $badge_query = new WP_Query( array(
 $badge_query->the_post();
 ?>
 {
-  "recipient": "sha256$<?php echo hash("sha256", $email); ?>",
-  "salt": "<?php echo wp_salt('auth'); ?>",
+  "recipient": "sha256$<?php echo hash("sha256", ($email . "hashbrowns")); ?>",
+  "salt": "hashbrowns",
   "evidence": "<?php echo $evidence; ?>",
   "issued_on": "<?php echo $issued_on; ?>",
   "badge": {
