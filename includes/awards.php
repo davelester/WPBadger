@@ -250,10 +250,9 @@ function wpbadger_disable_wysiwyg_for_awards( $default ) {
 add_filter('title_save_pre', 'wpbadger_award_save_title');
 function wpbadger_award_save_title($my_post_title) {
 	if ($_POST['post_type'] == 'award') {
-		$new_title = 'ramalamadingdong';
-		$my_post_title = $new_title;		
+		$new_title = "Badge Awarded: " . get_post_meta( $_POST['post_ID'], 'wpbadger-award-choose-badge', true );
 	}
-	return $my_post_title;
+	return $new_title;
 }
 
 add_filter('slug_save_pre', 'wpbadger_award_save_slug');
