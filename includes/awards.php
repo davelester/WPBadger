@@ -230,7 +230,7 @@ function wpbadger_award_send_email( $post_id ) {
 		
 		$post_title = get_the_title( $post_id );
 		$post_url = get_permalink( $post_id );
-		$subject = "Congratulations! You\'ve been awarded the \"$badge\" badge!";
+		$subject = "Congratulations! You\'ve been awarded the \"$badge[0]\" badge!";
 
 		$message = "Winner Winner chicken dinner! Please visit the link to redeem your badge.\n\n";
 		$message .= $post_url . "\n\n";
