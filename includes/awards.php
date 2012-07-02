@@ -247,7 +247,9 @@ function wpbadger_disable_wysiwyg_for_awards( $default ) {
     return $default;
 }-
 
+// Runs before saving a new post, and filters the post title
 add_filter('title_save_pre', 'wpbadger_award_save_title');
+
 function wpbadger_award_save_title($my_post_title) {
 	if ($_POST['post_type'] == 'award') {
 		$new_title = "Badge Awarded: " . $_POST['wpbadger-award-choose-badge'];
@@ -255,11 +257,12 @@ function wpbadger_award_save_title($my_post_title) {
 	return $new_title;
 }
 
-add_filter('slug_save_pre', 'wpbadger_award_save_slug');
+// Runs before saving a new post, and filters the post slug
+add_filter('name_save_pre', 'wpbadger_award_save_slug');
 
 function wpbadger_award_save_slug($my_post_slug) {
 	if ($_POST['post_type'] == 'award') {
-		$new_slug = '12345';
+		$new_slug = rand(100000000000000, 999999999999999);
 		$my_post_slug = $new_slug;		
 	}
 	return $my_post_slug;
