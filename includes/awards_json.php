@@ -37,7 +37,7 @@ $badge_query->the_post();
     "description": "<?php echo get_the_content(); ?>",
     "criteria": "<?php echo get_permalink(); ?>",
     "issuer": {
-      "origin": "<?php echo get_bloginfo('siteurl')?>",
+      "origin": "<?php $data = parse_url(get_bloginfo('siteurl')); echo 'http://' . $data['host']; ?>",
       "name": "<?php echo get_option('wpbadger_issuer_name'); ?>",
       "org": "<?php echo get_option('wpbadger_issuer_org'); ?>",
       "contact": "<?php echo get_option('wpbadger_issuer_contact'); ?>"
