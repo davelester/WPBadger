@@ -227,10 +227,10 @@ function wpbadger_award_send_email( $post_id ) {
 	if (('award' == get_post_type($post_id)) && ('publish' == get_post_status ($post_id))) {
 		$email_address = get_post_meta($post_id, 'wpbadger-award-email-address', true);
 		$badge = split(' (', get_post_meta($post_id, 'wpbadger-award-choose-badge', true));
-		
+
 		$post_title = get_the_title( $post_id );
 		$post_url = get_permalink( $post_id );
-		$subject = "Congratulations! You\'ve been awarded the \"$badge[0]\" badge!";
+		$subject = "Congratulations! You have been awarded a badge!";
 
 		$message = "Winner Winner chicken dinner! Please visit the link to redeem your badge.\n\n";
 		$message .= $post_url . "\n\n";
