@@ -68,6 +68,9 @@ wpbadger_admin_header('Manage Awarded Badges');
 				update_post_meta($post_id, 'wpbadger-award-email-address', $email);
 				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge);
 				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
+				
+				// Send award email
+				wpbadger_award_send_email($post_id);
 			}
 			
 			echo "<div id='message' class='updated'><p>Badges were awarded successfully. You can view a list of <a href='" . get_bloginfo('url') . "/wp-admin/edit.php?post_type=award'>all awards</a>.</p></div>";
