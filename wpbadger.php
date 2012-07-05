@@ -44,15 +44,15 @@ wpbadger_admin_header('Manage Awarded Badges');
 	global $wpdb;
 
 	if ($_POST['save']) {
-		if ($_REQUEST['wpbadger-award-choose-badge'] && $_REQUEST['wpbadger_award_email_address']) {
+		if ($_REQUEST['wpbadger_award_choose_badge'] && $_REQUEST['wpbadger_award_email_address']) {
 
-			$badge = $_REQUEST['wpbadger-award-choose-badge'];
+			$badge = $_REQUEST['wpbadger_award_choose_badge'];
 			$email_addresses = $_REQUEST['wpbadger_award_email_address'];
 			$evidence = $_REQUEST['wpbadger_award_evidence'];
 			$expires = $_REQUEST['wpbadger_award_expires'];
 
 			$email_addresses = split(',', $email_addresses);
-			
+	
 			foreach ($email_addresses as $email) {
 				$email = trim($email);
 
@@ -60,17 +60,16 @@ wpbadger_admin_header('Manage Awarded Badges');
 				$post = array(
 					'post_content' => $evidence,
 					'post_status' => 'publish',
-					'post_type' => 'award',
-					'post_title' => $badge
+					'post_type' => 'award'
 				);
 
 				$post_id = wp_insert_post( $post, $wp_error );
-				
-				update_post_meta($post_id, 'wpbadger_award_email_address', $email);
-				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge);
-				update_post_meta($post_id, 'wpbadger_award_expires', $expires);
-			}
 
+				update_post_meta($post_id, 'wpbadger-award-email-address', $email);
+				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge);
+				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
+			}
+			
 			// If successful, redirect to the list of awards
 			// @todo: check that this works
 			wp_redirect('edit.php?post_type=award');
@@ -86,10 +85,10 @@ wpbadger_admin_header('Manage Awarded Badges');
 	        <tr valign="top">
 	        <th scope="row">Choose Badge</th>
 	        <td>
-				<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger-award-choose-badge', true );?>
+				<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger_award_choose_badge', true );?>
 
 				<p>
-				<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">
+				<select name="wpbadger_award_choose_badge" id="wpbadger_award_choose_badge">
 
 				<?php 	
 				$query = new WP_Query( array( 'post_type' => 'badge' ) );
@@ -102,7 +101,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 					} else {
 						$selected = "";
 					}
-					echo "<option name='wpbadger-award-choose-badge'". $selected . ">";
+					echo "<option name='wpbadger_award_choose_badge'". $selected . ">";
 					echo $title_version . "</option>";
 				endwhile;
 				?>
@@ -110,8 +109,9 @@ wpbadger_admin_header('Manage Awarded Badges');
 				</select>
 	        </td>
 	        </tr>
-
+			
 	        <tr valign="top">
+			
 	        <th scope="row">Email Address (separated by commas)</th>
 	        <td><textarea name="wpbadger_award_email_address" id="wpbadger_award_email_address" rows="4" cols="30"></textarea></td>
 	        </tr>
@@ -122,8 +122,8 @@ wpbadger_admin_header('Manage Awarded Badges');
 	        </tr>
 
 	        <tr valign="top">
-	        <th scope="row">Expiration Date</th>
-	        <td><input type="text" name="wpbadger_award_expires" /></td>
+	        <th scope="row">Expiration Date (optional field, YY-MM-DD format)</th>
+	        <td><input type="text" name="wpbadger_award_expires" id="title" /></td>
 	        </tr>
 	    </table>
 
