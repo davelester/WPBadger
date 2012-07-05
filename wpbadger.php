@@ -70,11 +70,9 @@ wpbadger_admin_header('Manage Awarded Badges');
 				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
 			}
 			
-			// If successful, redirect to the list of awards
-			// @todo: check that this works
-			wp_redirect('edit.php?post_type=award');
+			echo "<div id='message' class='updated'><p>Badges were awarded successfully. You can view a list of <a href='" . get_bloginfo('url') . "/wp-admin/edit.php?post_type=award'>all awards</a>.</p></div>";
 		} else {
-			echo "<div id='message' class='updated'>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
+			echo "<div id='message' class='updated'><p>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
 		}
 	}
 ?>
