@@ -264,13 +264,19 @@ function wpbadger_award_save_title($data, $postarr) {
 	return $data;
 }
 
+// Generate the award slug. Shared by interface to award single badges, as well as bulk
+function wpbadger_award_generate_slug() {
+	$slug = rand(100000000000000, 999999999999999);
+	
+	return $slug;
+}
+
 // Runs before saving a new post, and filters the post slug
 add_filter('name_save_pre', 'wpbadger_award_save_slug');
 
 function wpbadger_award_save_slug($my_post_slug) {
 	if ($_POST['post_type'] == 'award') {
-		$new_slug = rand(100000000000000, 999999999999999);
-		$my_post_slug = $new_slug;		
+		$my_post_slug = wpbadger_award_generate_slug();		
 	}
 	return $my_post_slug;
 }

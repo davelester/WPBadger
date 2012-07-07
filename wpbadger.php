@@ -46,7 +46,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 	if ($_POST['save']) {
 		if ($_REQUEST['wpbadger_award_choose_badge'] && $_REQUEST['wpbadger_award_email_address']) {
 
-			$badge = $_REQUEST['wpbadger_award_choose_badge'];
+			$badge_id = $_REQUEST['wpbadger_award_choose_badge'];
 			$email_addresses = $_REQUEST['wpbadger_award_email_address'];
 			$evidence = $_REQUEST['wpbadger_award_evidence'];
 			$expires = $_REQUEST['wpbadger_award_expires'];
@@ -60,13 +60,15 @@ wpbadger_admin_header('Manage Awarded Badges');
 				$post = array(
 					'post_content' => $evidence,
 					'post_status' => 'publish',
-					'post_type' => 'award'
+					'post_type' => 'award',
+					'post_title' => 'Badge Awarded: ' . get_the_title($badge_id),
+					'post_name' => wpbadger_award_generate_slug()
 				);
 
 				$post_id = wp_insert_post( $post, $wp_error );
 
 				update_post_meta($post_id, 'wpbadger-award-email-address', $email);
-				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge);
+				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge_id);
 				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
 				
 				// Send award email
@@ -80,7 +82,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 	}
 ?>
 
-	<form method="POST" action="" name="wpbadger_config">
+	<form method="POST" action="" name="wpbadger_bulk_award_badges">
 
 	    <table class="form-table">
 	        <tr valign="top">
