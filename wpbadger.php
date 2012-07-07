@@ -177,6 +177,11 @@ if ($_POST['save']) {
 		update_option('wpbadger_issuer_contact', $_REQUEST['wpbadger_issuer_contact']);
 		$success = TRUE;
 	}
+	
+	if ($_REQUEST['wpbadger_config_award_email_text']) {
+		update_option('wpbadger_config_award_email_text', $_REQUEST['wpbadger_config_award_email_text']);
+		$success = TRUE;
+	}
 
 	if ($success) {
 		echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
@@ -205,7 +210,7 @@ if ($_POST['save']) {
 
 		<tr valign="top">
 		<th scope="row">Badge Award Email Text</th>
-		<td><textarea name="wpbadger_config_award_email_text" id="wpbadger_config_award_email_text" rows="4" cols="30"></textarea></td>
+		<td><textarea name="wpbadger_config_award_email_text" id="wpbadger_config_award_email_text" rows="4" cols="30"><?php echo get_option('wpbadger_config_award_email_text'); ?></textarea></td>
 		</tr>
     </table>
 

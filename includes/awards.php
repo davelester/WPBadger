@@ -232,7 +232,11 @@ function wpbadger_award_send_email( $post_id ) {
 		$post_url = get_permalink( $post_id );
 		$subject = "Congratulations! You have been awarded a badge!";
 
-		$message = "Winner Winner chicken dinner! Please visit the link to redeem your badge.\n\n";
+		if (get_option('wpbadger_config_award_email_text')) {
+			$message = get_option('wpbadger_config_award_email_text') . '\n\n';
+		} else {
+			$message = "Congratulations, " . get_option('wpbadger_issuer_org') . " has awarded you a badge. Please visit the link below to redeem it.\n\n";			
+		}
 		$message .= $post_url . "\n\n";
 
 		wp_mail( $email_address, $subject, $message );
