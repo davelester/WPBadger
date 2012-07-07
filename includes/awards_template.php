@@ -1,4 +1,5 @@
 <?php 
+global $post;
 
 wp_enqueue_script('openbadges', 'http://beta.openbadges.org/issuer.js', array(), null);
 wp_enqueue_script('jquery_ajax', 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js');
@@ -50,7 +51,7 @@ $(document).ready(function() {
 	});
 </script>
 
-<h1>Congratulations! The <?php echo get_the_title(); ?> badge has been awarded</h1>
+<h1>Congratulations! The <?php echo get_the_title(get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)); ?> badge has been awarded</h1>
 
 <p>Please choose to <a href="#" class="backPackLink">accept badge</a> or <a href="#">decline badge</a></p>
 
