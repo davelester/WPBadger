@@ -70,6 +70,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 				update_post_meta($post_id, 'wpbadger-award-email-address', $email);
 				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge_id);
 				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
+				update_post_meta($post_id, 'wpbadger-award-estatus','Awarded');
 				
 				// Send award email
 				wpbadger_award_send_email($post_id);
