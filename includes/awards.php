@@ -220,7 +220,7 @@ function wpbadger_award_template_check() {
 	return $template;
 }
 
-add_action( 'wp_insert_post', 'wpbadger_award_send_email' );
+add_action( 'save_post', 'wpbadger_award_send_email' );
 
 function wpbadger_award_send_email( $post_id ) {
 	// Verify that post has been published, and is an award
