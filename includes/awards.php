@@ -128,7 +128,7 @@ function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
 
 	<?php wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' ); ?>
 	
-	<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger-award-choose-badge', true );?>
+	<?php $chosen_badge_id = get_post_meta( $object->ID, 'wpbadger-award-choose-badge', true );?>
 	
 	<p>
 	<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">
@@ -137,15 +137,16 @@ function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
 	$query = new WP_Query( array( 'post_type' => 'badge' ) );
 	
 	while ( $query->have_posts() ) : $query->the_post();
-		$title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
+		$badge_title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
 
-		if ($choose_badge_meta == $title_version) { 
+		// As we iterate through the list of badges, if the chosen badge has the same ID then mark it as selected
+		if ($chosen_badge_id == get_the_ID()) { 
 			$selected = " selected";
 		} else {
 			$selected = "";
 		}
 		echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";
-		echo $title_version . "</option>";
+		echo $badge_title_version . "</option>";
 	endwhile;
 	?>
 	
@@ -253,15 +254,15 @@ function wpbadger_disable_wysiwyg_for_awards( $default ) {
     return $default;
 }
 
-// Runs before saving a new post, and filters the post title
-// add_filter('title_save_pre', 'wpbadger_award_save_title');
-// 
-// function wpbadger_award_save_title($my_post_title) {
-// 	if ($_POST['post_type'] == 'award') {
-// 		$new_title = "Badge Awarded: " . $_POST['wpbadger-award-choose-badge'];
-// 	}
-// 	return $new_title;
-// }
+// Runs before saving a new post, and filters the post data
+add_filter('wp_insert_post_data', 'wpbadger_award_save_title');
+
+function wpbadger_award_save_title($data, $postarr) {
+	if ($_POST['post_type'] == 'award') {
+		$data['post_title'] = "Badge Awarded: " . get_the_title($_POST['wpbadger-award-choose-badge']);
+	}
+	return $data;
+}
 
 // Runs before saving a new post, and filters the post slug
 add_filter('name_save_pre', 'wpbadger_award_save_slug');
