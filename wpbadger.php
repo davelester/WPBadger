@@ -102,8 +102,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 					} else {
 						$selected = "";
 					}
-					echo "<option name='wpbadger_award_choose_badge'". $selected . ">";
-					echo $title_version . "</option>";
+					echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";					echo $title_version . "</option>";
 				endwhile;
 				?>
 

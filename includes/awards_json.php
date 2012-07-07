@@ -1,9 +1,9 @@
 <?php global $post;
 header('Content-Type: application/json'); 
 $email = get_post_meta($post->ID, 'wpbadger-award-email-address', true);
-$chosen_badge = get_post_meta($post->ID, 'wpbadger-award-choose-badge', true);
-list($title, $version) = split(' \(', $chosen_badge, 2);
-$version = substr($version,0,-1);
+$chosen_badge_id = get_post_meta($post->ID, 'wpbadger-award-choose-badge', true);
+$title = get_the_title($chosen_badge_id);
+$version = get_post_meta( $chosen_badge_id, 'wpbadger-badge-version', true );
 $issued_on = get_the_date('Y-m-d');
 $evidence = get_permalink();
 

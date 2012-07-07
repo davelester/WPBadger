@@ -144,7 +144,7 @@ function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
 		} else {
 			$selected = "";
 		}
-		echo "<option name='wpbadger-award-choose-badge'". $selected . ">";
+		echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";
 		echo $title_version . "</option>";
 	endwhile;
 	?>
@@ -226,11 +226,11 @@ function wpbadger_award_send_email( $post_id ) {
 	// Verify that post has been published, and is an award
 	if (('award' == get_post_type($post_id)) && ('publish' == get_post_status ($post_id))) {
 		$email_address = get_post_meta($post_id, 'wpbadger-award-email-address', true);
-		$badge = split(' (', get_post_meta($post_id, 'wpbadger-award-choose-badge', true));
+		$badge = get_the_title(get_post_meta($post_id, 'wpbadger-award-choose-badge', true));
 
 		$post_title = get_the_title( $post_id );
 		$post_url = get_permalink( $post_id );
-		$subject = "Congratulations! You have been awarded a badge!";
+		$subject = "Congratulations! You have been awarded the " . $badge . " badge!";
 
 		if (get_option('wpbadger_config_award_email_text')) {
 			$message = get_option('wpbadger_config_award_email_text') . '\n\n';
@@ -251,17 +251,17 @@ function wpbadger_disable_wysiwyg_for_awards( $default ) {
     if ( 'award' == get_post_type( $post ) )
         return false;
     return $default;
-}-
+}
 
 // Runs before saving a new post, and filters the post title
-add_filter('title_save_pre', 'wpbadger_award_save_title');
-
-function wpbadger_award_save_title($my_post_title) {
-	if ($_POST['post_type'] == 'award') {
-		$new_title = "Badge Awarded: " . $_POST['wpbadger-award-choose-badge'];
-	}
-	return $new_title;
-}
+// add_filter('title_save_pre', 'wpbadger_award_save_title');
+// 
+// function wpbadger_award_save_title($my_post_title) {
+// 	if ($_POST['post_type'] == 'award') {
+// 		$new_title = "Badge Awarded: " . $_POST['wpbadger-award-choose-badge'];
+// 	}
+// 	return $new_title;
+// }
 
 // Runs before saving a new post, and filters the post slug
 add_filter('name_save_pre', 'wpbadger_award_save_slug');
