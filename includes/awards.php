@@ -121,6 +121,15 @@ function wpbadger_add_award_meta_boxes() {
 		'side',							// Context
 		'default'						// Priority
 	);
+
+	add_meta_box(
+		'wpbadger-award-status',		// Unique ID
+		esc_html__( 'Award Status', 'example' ),	// Title
+		'wpbadger_award_status_meta_box',		// Callback function
+		'award',						// Admin page (or post type)
+		'side',							// Context
+		'default'						// Priority
+	);
 }
 
 // Display metaboxes
@@ -161,6 +170,32 @@ function wpbadger_award_email_address_meta_box( $object, $box ) { ?>
 	</p>
 <?php }
 
+function wpbadger_award_status_meta_box( $object, $box ) { ?>
+	<p>
+	<select name="wpbadger-award-status" id="wpbadger-award-status">
+
+	<?php
+	$award_status = get_post_meta( $object->ID, 'wpbadger-award-status', true );
+	$award_status_options = array('Awarded', 'Accepted', 'Declined');
+	
+	foreach ($award_status_options as $status_option) {
+
+		// Mark the 
+		if ($status_option == $award_status) { 
+			$selected = " selected";
+		} else {
+			$selected = "";
+		}
+		
+		echo "<option name='wpbadger-award-status'" . $selected . ">" . $status_option . "</option>";
+	}
+	?>
+	
+	</select>
+	</p>
+
+<?php }
+
 function wpbadger_save_award_meta( $post_id, $post ) {
 
 	if ( !isset( $_POST['wpbadger_award_nonce'] ) || !wp_verify_nonce( $_POST['wpbadger_award_nonce'], basename( __FILE__ ) ) )
@@ -179,6 +214,10 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 	$email_meta_key = 'wpbadger-award-email-address';
 	$email_meta_value = get_post_meta( $post_id, $email_meta_key, true );
 
+	$status_new_meta_value = $_POST['wpbadger-award-status'];
+	$status_meta_key = 'wpbadger-award-status';
+	$status_meta_value = get_post_meta( $post_id, $status_meta_key, true );
+
 	if ( $chosen_badge_new_meta_value ) {
 		update_post_meta( $post_id, $chosen_badge_meta_key, $chosen_badge_new_meta_value );
 	} elseif ( '' == $chosen_badge_new_meta_value ) {
@@ -191,6 +230,14 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 		update_post_meta( $post_id, $email_meta_key, $email_new_meta_value );
 	} elseif ( '' == $email_new_meta_value && $email_meta_value ) {
 		delete_post_meta( $post_id, $email_meta_key, $email_meta_value );	
+	}
+	
+	if ( $status_new_meta_value && '' == $status_meta_value ) {
+		add_post_meta( $post_id, $status_meta_key, $status_new_meta_value, true );
+	} elseif ( $status_new_meta_value && $status_new_meta_value != $status_meta_value ) {
+		update_post_meta( $post_id, $status_meta_key, $status_new_meta_value );
+	} elseif ( '' == $status_new_meta_value && $status_meta_value ) {
+		delete_post_meta( $post_id, $status_meta_key, $status_meta_value );	
 	}
 }
 
