@@ -256,8 +256,10 @@ function wpbadger_award_template_check() {
 		
 		if ($json) {
 			$template_file = dirname(__FILE__) . '/awards_json.php';
-			return $template_file;			
+			return $template_file;
 		} elseif ($accept) {
+			$template_file = dirname(__FILE__) . '/awards_accept.php';
+			return $template_file;
 		} elseif ($reject) {			
 		} else {
 			$template_file = dirname(__FILE__) . '/awards_template.php';
