@@ -23,31 +23,21 @@ $(document).ready(function() {
 	//Function that issues the badge
 	$('.backPackLink').click(function() {
 		var assertionUrl = "<?php echo get_permalink(); ?>json/";
-       OpenBadges.issue([''+assertionUrl+''], function(errors, successes) { 
-					if (errors.length > 0 ) {
-						$('#errMsg').text('Error Message: '+ errors.toSource());
-						$('#badge-error').show();	
-						var data = 'ERROR, <?php echo $badges_array[$badgeId]['name']; ?>, <?php echo $recipient_name; ?>, ' +  errors.toSource();
-						$.ajax({
-    					url: 'record-issued-badges.php',
-    					type: 'POST',
-    					data: { data: data }
-						});
-					}
-					
-					if (successes.length > 0) {
-							$('.backPackLink').hide();
-							$('.login-info').hide();
-							$('#badgeSuccess').show();
-							var data = 'SUCCESS, <?php echo $badges_array[$badgeId]['name']; ?>, <?php echo $recipient_name; ?>';
-							$.ajax({
-    						url: 'record-issued-badges.php',
-    						type: 'POST',
-    						data: { data: data }
-							});
-						}	
-					});    
-				});
+		OpenBadges.issue([''+assertionUrl+''], function(errors, successes) {					
+			if (successes.length > 0) {
+					$('.backPackLink').hide();
+					$('.login-info').hide();
+					$('#badgeSuccess').show();
+					$.ajax({
+  						url: '<?php echo get_permalink(); ?>accept/',
+  						type: 'POST',
+						success: function(data, textStatus) {
+							window.location.href = '<?php echo get_permalink(); ?>';
+						}
+					});
+				}
+			});
+		});
 	});
 </script>
 
