@@ -20,7 +20,7 @@ $(document).ready(function() {
 		$('.browserSupport').show();
 	}
 	
-	//Function that issues the badge
+	// Function that issues the badge
 	$('.backPackLink').click(function() {
 		var assertionUrl = "<?php echo get_permalink(); ?>json/";
 		OpenBadges.issue([''+assertionUrl+''], function(errors, successes) {					
@@ -38,7 +38,18 @@ $(document).ready(function() {
 				}
 			});
 		});
+	
+	// Function that rejects the badge
+	$('.rejectBadge').click(function() {
+		$.ajax({
+			url: '<?php echo get_permalink(); ?>reject/',
+			type: 'POST',
+			success: function(data, textStatus) {
+				window.location.href = '<?php echo get_permalink(); ?>';
+			}
+		});
 	});
+});
 </script>
 
 <?php
@@ -46,16 +57,16 @@ $award_status = get_post_meta($post->ID, 'wpbadger-award-status', true);
 if ($award_status == 'Awarded') { ?>
 <h1>Congratulations! The <?php echo get_the_title(get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)); ?> badge has been awarded</h1>
 
-<p>Please choose to <a href="#" class="backPackLink">accept badge</a> or <a href="#">decline badge</a></p>
+<p>Please choose to <a href="#" class="backPackLink">accept badge</a> or <a href="#" class="rejectBadge">decline badge</a></p>
 
 <?php } elseif ($award_status == 'Accepted') {?>
-	<p>This award has already been accepted.</p>
-<?php } elseif ($award_status == 'Declined') { ?>
-	<p>This award has been declined by the user.</p>
+	<p>Your award has been successfully accepted and added to your backpack.</p>
+<?php } elseif ($award_status == 'Rejected') { ?>
+	<p>You have declined this badge.</p>
 <?php } ?>
 
-	</div><!-- #content -->
-</div><!-- #container -->
+	</div>
+</div>
 
 <?php get_sidebar(); ?>
 <?php get_footer(); ?>
