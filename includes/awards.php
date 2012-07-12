@@ -176,7 +176,7 @@ function wpbadger_award_status_meta_box( $object, $box ) { ?>
 
 	<?php
 	$award_status = get_post_meta( $object->ID, 'wpbadger-award-status', true );
-	$award_status_options = array('Awarded', 'Accepted', 'Declined');
+	$award_status_options = array('Awarded', 'Accepted', 'Rejected');
 	
 	foreach ($award_status_options as $status_option) {
 
@@ -260,7 +260,9 @@ function wpbadger_award_template_check() {
 		} elseif ($accept) {
 			$template_file = dirname(__FILE__) . '/awards_accept.php';
 			return $template_file;
-		} elseif ($reject) {			
+		} elseif ($reject) {
+			$template_file = dirname(__FILE__) . '/awards_reject.php';
+			return $template_file;	
 		} else {
 			$template_file = dirname(__FILE__) . '/awards_template.php';
 			return $template_file;
