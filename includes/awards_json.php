@@ -2,6 +2,7 @@
 header('Content-Type: application/json'); 
 $email = get_post_meta($post->ID, 'wpbadger-award-email-address', true);
 $chosen_badge_id = get_post_meta($post->ID, 'wpbadger-award-choose-badge', true);
+$salt = get_post_meta( $post->ID, 'wpbadger-award-salt', true );
 $title = get_the_title($chosen_badge_id);
 $version = get_post_meta( $chosen_badge_id, 'wpbadger-badge-version', true );
 $issued_on = get_the_date('Y-m-d');
@@ -26,8 +27,8 @@ $badge_query = new WP_Query( array(
 $badge_query->the_post();
 ?>
 {
-  "recipient": "sha256$<?php echo hash("sha256", ($email . "hashbrowns")); ?>",
-  "salt": "hashbrowns",
+  "recipient": "sha256$<?php echo hash("sha256", ($email . $salt)); ?>",
+  "salt": "<?php echo $salt; ?>",
   "evidence": "<?php echo $evidence; ?>",
   "issued_on": "<?php echo $issued_on; ?>",
   "badge": {

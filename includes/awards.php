@@ -217,6 +217,8 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 	$status_new_meta_value = $_POST['wpbadger-award-status'];
 	$status_meta_key = 'wpbadger-award-status';
 	$status_meta_value = get_post_meta( $post_id, $status_meta_key, true );
+	
+	$salt = substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 8)), 0, 8);
 
 	if ( $chosen_badge_new_meta_value ) {
 		update_post_meta( $post_id, $chosen_badge_meta_key, $chosen_badge_new_meta_value );
@@ -238,6 +240,11 @@ function wpbadger_save_award_meta( $post_id, $post ) {
 		update_post_meta( $post_id, $status_meta_key, $status_new_meta_value );
 	} elseif ( '' == $status_new_meta_value && $status_meta_value ) {
 		delete_post_meta( $post_id, $status_meta_key, $status_meta_value );	
+	}
+	
+	// Add the salt only the first time, and do not update if already exists
+	if (get_post_meta($post_id, 'wpbadger-award-salt', true) == false) {
+		add_post_meta($post_id, 'wpbadger-award-salt', $salt);
 	}
 }
 
