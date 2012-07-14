@@ -283,7 +283,7 @@ add_action( 'wp_insert_post', 'wpbadger_award_send_email' );
 
 function wpbadger_award_send_email( $post_id ) {
 	// Verify that post has been published, and is an award
-	if (('award' == get_post_type($post_id)) && ('publish' == get_post_status ($post_id))) {
+	if ((get_post_type($post_id) == 'award') && (get_post_status($post_id) == 'publish') && ($_REQUEST['wpbadger-award-status'] == 'Awarded')) {
 		$email_address = get_post_meta($post_id, 'wpbadger-award-email-address', true);
 		$badge = get_the_title(get_post_meta($post_id, 'wpbadger-award-choose-badge', true));
 
@@ -292,7 +292,7 @@ function wpbadger_award_send_email( $post_id ) {
 		$subject = "Congratulations! You have been awarded the " . $badge . " badge!";
 
 		if (get_option('wpbadger_config_award_email_text')) {
-			$message = get_option('wpbadger_config_award_email_text') . '\n\n';
+			$message = get_option('wpbadger_config_award_email_text') . "\n\n";
 		} else {
 			$message = "Congratulations, " . get_option('wpbadger_issuer_org') . " has awarded you a badge. Please visit the link below to redeem it.\n\n";			
 		}
