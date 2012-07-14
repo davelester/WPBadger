@@ -22,6 +22,12 @@ $wpbadger_db_version = "0.6";
 
 function wpbadger_install()
 {
+	// If the current theme does not support post thumbnails, exit install and flash warning
+	if(!current_theme_supports('post-thumbnails')) {
+		echo "Unable to install plugin, because current theme does not support post-thumbnails. You can fix this by adding the following line to your current theme's functions.php file: add_theme_support( 'post-thumbnails' );";
+		exit;
+	}
+
 	global $wpbadger_db_version;
 
 	add_option("wpbadger_db_version", $wpbadger_db_version);
