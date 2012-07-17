@@ -313,7 +313,7 @@ function wpbadger_disable_wysiwyg_for_awards( $default ) {
 }
 
 // Runs before saving a new post, and filters the post data
-add_filter('wp_insert_post_data', 'wpbadger_award_save_title');
+add_filter('wp_insert_post_data', 'wpbadger_award_save_title', '99', 2);
 
 function wpbadger_award_save_title($data, $postarr) {
 	if ($_POST['post_type'] == 'award') {
