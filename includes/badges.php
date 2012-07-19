@@ -85,10 +85,7 @@ function wpbadger_badges_meta_box( $object, $box ) { ?>
 <?php }
 
 function wpbadger_save_badge_meta( $post_id, $post ) {
-
-	if ( !isset( $_POST['wpbadger_badge_nonce'] ) || !wp_verify_nonce( $_POST['wpbadger_badge_nonce'], basename( __FILE__ ) ) )
-		return $post_id;
-
+	
 	$post_type = get_post_type_object( $post->post_type );
 
 	if ( !current_user_can( $post_type->cap->edit_post, $post_id ) )
