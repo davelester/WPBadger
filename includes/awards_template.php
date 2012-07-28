@@ -3,7 +3,16 @@ global $post;
 
 wp_enqueue_script('openbadges', 'http://beta.openbadges.org/issuer.js', array(), null);
 wp_enqueue_script('jquery_ajax', 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js');
-get_header(); ?>
+get_header(); 
+
+// Pass query parameters differently based upon site permalink structure
+if (get_option('permalink_structure') == '') {
+	$query_separator = '&';
+} else {
+	$query_separator = '?';
+}
+
+?>
 
 <div id="container">
 	<div id="content" role="main">
@@ -22,14 +31,14 @@ $(document).ready(function() {
 	
 	// Function that issues the badge
 	$('.backPackLink').click(function() {
-		var assertionUrl = "<?php echo get_permalink(); ?>json/";
+		var assertionUrl = "<?php echo get_permalink() . $query_separator; ?>json=1";
 		OpenBadges.issue([''+assertionUrl+''], function(errors, successes) {					
 			if (successes.length > 0) {
 					$('.backPackLink').hide();
 					$('.login-info').hide();
 					$('#badgeSuccess').show();
 					$.ajax({
-  						url: '<?php echo get_permalink(); ?>accept/',
+  						url: '<?php echo get_permalink() . $query_separator; ?>accept=1',
   						type: 'POST',
 						success: function(data, textStatus) {
 							window.location.href = '<?php echo get_permalink(); ?>';
@@ -42,7 +51,7 @@ $(document).ready(function() {
 	// Function that rejects the badge
 	$('.rejectBadge').click(function() {
 		$.ajax({
-			url: '<?php echo get_permalink(); ?>reject/',
+			url: '<?php echo get_permalink() . $query_separator; ?>reject=1',
 			type: 'POST',
 			success: function(data, textStatus) {
 				window.location.href = '<?php echo get_permalink(); ?>';
