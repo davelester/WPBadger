@@ -6,7 +6,7 @@
 Plugin Name: WPBadger
 Plugin URI: https://github.com/davelester/WPBadger
 Description: A lightweight badge issuing platform built using WordPress.
-Version: 0.6.1
+Version: 0.6.2
 Author: Dave Lester
 Author URI: http://www.davelester.org
 */
@@ -19,7 +19,7 @@ require_once( dirname(__FILE__) . '/includes/badges.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
 
 global $wpbadger_db_version;
-$wpbadger_db_version = "0.6.1";
+$wpbadger_db_version = "0.6.2";
 
 function wpbadger_activate()
 {
