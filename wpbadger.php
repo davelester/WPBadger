@@ -12,7 +12,8 @@ Author URI: http://www.davelester.org
 */
 
 add_action('admin_menu', 'wpbadger_admin_menu');
-register_activation_hook(__FILE__,'wpbadger_install');
+register_activation_hook(__FILE__,'wpbadger_activate');
+register_deactivation_hook(__FILE__,'wpbadger_deactivate');
 
 require_once( dirname(__FILE__) . '/includes/badges.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
@@ -20,7 +21,7 @@ require_once( dirname(__FILE__) . '/includes/awards.php' );
 global $wpbadger_db_version;
 $wpbadger_db_version = "0.6.1";
 
-function wpbadger_install()
+function wpbadger_activate()
 {
 	// If the current theme does not support post thumbnails, exit install and flash warning
 	if(!current_theme_supports('post-thumbnails')) {
@@ -31,6 +32,16 @@ function wpbadger_install()
 	global $wpbadger_db_version;
 
 	add_option("wpbadger_db_version", $wpbadger_db_version);
+
+	// Flush rewrite rules
+	global $wp_rewrite;
+	$wp_rewrite->flush_rules();
+}
+
+function wpbadger_deactivate()
+{
+	global $wp_rewrite;
+	$wp_rewrite->flush_rules();
 }
 
 function wpbadger_admin_menu()
