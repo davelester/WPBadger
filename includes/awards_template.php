@@ -63,16 +63,21 @@ $(document).ready(function() {
 
 <?php
 $award_status = get_post_meta($post->ID, 'wpbadger-award-status', true);
+if ($accept) { ?>
+	<p>Your award has been successfully accepted and added to your backpack.</p>
+<?php } else {
 if ($award_status == 'Awarded') { ?>
 <h1>Congratulations! The <?php echo get_the_title(get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)); ?> badge has been awarded</h1>
 
 <p>Please choose to <a href="#" class="backPackLink">accept badge</a> or <a href="#" class="rejectBadge">decline badge</a></p>
 
 <?php } elseif ($award_status == 'Accepted') {?>
-	<p>Your award has been successfully accepted and added to your backpack.</p>
+	<p>This award has already been claimed.</p><p>If you believe this was done in error, please contact the site administrator, <a href="mailto:<?php echo get_settings('admin_email');?>"><?php echo get_settings('admin_email');?></p>
 <?php } elseif ($award_status == 'Rejected') { ?>
 	<p>You have declined this badge.</p>
-<?php } ?>
+<?php } 
+
+} ?>
 
 	</div>
 </div>
