@@ -144,7 +144,7 @@ function wpbadger_badge_content_filter($content) {
 add_filter( 'the_title', 'wpbadger_badge_title_filter', 10, 3 );
 
 function wpbadger_badge_title_filter($title) {
-	if (get_post_type() == 'badge') {
+	if (get_post_type() == 'badge' && in_the_loop()) {
 		$new_title = $title . ' (Version ' . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ')';
 		return $new_title;
 	} else {
