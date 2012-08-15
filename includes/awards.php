@@ -259,7 +259,7 @@ function wpbadger_award_template_check() {
 	$reject = get_query_var( 'reject' );
 
 	// Check if post type 'Awards'
-	if ( 'award' == get_post_type() ) {
+	if ( get_post_type() == 'award' ) {
 		
 		if ($json) {
 			$template_file = dirname(__FILE__) . '/awards_json.php';
@@ -269,7 +269,7 @@ function wpbadger_award_template_check() {
 			return $template_file;
 		} elseif ($reject) {
 			$template_file = dirname(__FILE__) . '/awards_reject.php';
-			return $template_file;	
+			return $template_file;
 		} else {
 			$template_file = dirname(__FILE__) . '/awards_template.php';
 			return $template_file;
