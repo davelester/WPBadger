@@ -128,4 +128,27 @@ function wpbadger_disable_wysiwyg_for_badges( $default ) {
     return $default;
 }
 
+/* Filter the content of the badge post type in the display, so badge metadata
+including badge image are displayed on the page. */
+add_filter( 'the_content', 'wpbadger_badge_content_filter' );
+
+function wpbadger_badge_content_filter($content) {
+	if (get_post_type() == 'badge') {
+		return '<p>' . get_the_post_thumbnail(get_the_ID(), 'thumbnail', array('class' => 'alignright')) . get_the_content() . '</p>';
+	} else {
+		return $content;
+	}
+}
+
+/* Filter the title of a badge post type in its display to include version */
+add_filter( 'the_title', 'wpbadger_badge_title_filter', 10, 3 );
+
+function wpbadger_badge_title_filter($title) {
+	if (get_post_type() == 'badge') {
+		$new_title = $title . ' (Version ' . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ')';
+		return $new_title;
+	} else {
+		return $title;
+	}
+}
 ?>
