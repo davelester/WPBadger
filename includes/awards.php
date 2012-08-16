@@ -28,7 +28,7 @@ class WPbadger_Award_Schema {
 			'add_new_item' => __('Add New Award'),
 			'edit_item' => __('Edit Award'),
 			'new_item' => __('New Award'),
-			'all_items' => __('All Award'),
+			'all_items' => __('All Awards'),
 			'view_item' => __('View Award'),
 			'search_items' => __('Search Awards'),
 			'not_found' =>  __('No awards found'),
