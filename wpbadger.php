@@ -12,6 +12,7 @@ Author URI: http://www.davelester.org
 */
 
 add_action('admin_menu', 'wpbadger_admin_menu');
+add_action('openbadges_shortcode', 'wpbadger_shortcode');
 register_activation_hook(__FILE__,'wpbadger_activate');
 register_deactivation_hook(__FILE__,'wpbadger_deactivate');
 
@@ -170,6 +171,46 @@ function wpbadger_configured()
 		return TRUE;
 	} else {
 		return FALSE;
+	}
+}
+
+function wpbadger_shortcode()
+{
+	// Query for badges with specific title
+	// @todo: sort the badge version to make it first
+	if ($badgename) {
+		echo "bah";
+		exit;
+		$badge_query = new WP_Query(array('post_type' => 'badge', 'post_title' => $badge_name));
+
+		while ( $badge_query->have_posts() ) : $badge_query->the_post();
+
+			// Query for a user meta, check if email is user meta email
+			$award_query = new WP_Query( array(
+				'post_status' => 'publish',
+				'post_type' => 'award',
+				'meta_query' => array(
+					array(
+						'key' => 'wpbadger-award-email-address',
+						'value' => $email,
+						'compare' => '=',
+						'type' => 'CHAR'
+						),
+					array(
+						'key' => 'wpbadger-award-choose-badge',
+						'value' => get_the_ID(),
+						'compare' => '=',
+						'type' => 'CHAR'
+						)
+					)
+				)
+			);
+
+			// If award has been issued to specific email address, add to params
+			if ($award_query) {
+				array_push($options, $email);
+			}
+		endwhile;
 	}
 }
 
