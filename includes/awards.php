@@ -338,4 +338,21 @@ function wpbadger_award_save_slug($my_post_slug) {
 	}
 	return $my_post_slug;
 }
+
+add_filter('manage_award_posts_columns', 'wpbadger_columns_awards', 10);  
+add_action('manage_award_posts_custom_column', 'wpbadger_columns_content_only_awards', 10, 2);  
+  
+function wpbadger_columns_awards	($defaults) {  
+    $defaults['issued_to_email'] = 'Issued To Email';
+	$defaults['badge_status'] = 'Badge Status';
+    return $defaults;  
+}  
+function wpbadger_columns_content_only_awards($column_name, $post_id) {  
+    if ($column_name == 'issued_to_email') {  
+		echo get_post_meta($post_id, 'wpbadger-award-email-address', true);
+    }
+	if ($column_name == 'badge_status') {
+		echo get_post_meta($post_id, 'wpbadger-award-status', true);
+	}
+}
 ?>
