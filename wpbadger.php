@@ -283,3 +283,11 @@ if ($_POST['save']) {
 
 <?php
 }
+
+function wpbadger_disable_quickedit( $actions, $post ) {
+    if( $post->post_type == 'badge' || 'award' ) {
+        unset( $actions['inline hide-if-no-js'] );
+    }
+    return $actions;
+}
+add_filter( 'post_row_actions', 'wpbadger_disable_quickedit', 10, 2 );
