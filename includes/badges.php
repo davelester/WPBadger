@@ -151,4 +151,17 @@ function wpbadger_badge_title_filter($title) {
 		return $title;
 	}
 }
+
+add_filter('manage_badge_posts_columns', 'wpbadger_columns_badges', 10);  
+add_action('manage_badge_posts_custom_column', 'wpbadger_columns_content_only_badges', 10, 2);  
+  
+function wpbadger_columns_badges	($defaults) {  
+	$defaults['badge_version'] = 'Badge Version';
+    return $defaults;  
+}  
+function wpbadger_columns_content_only_badges($column_name, $post_id) {  
+    if ($column_name == 'badge_version') {  
+		echo get_post_meta($post_id, 'wpbadger-badge-version', true);
+    }
+}
 ?>
