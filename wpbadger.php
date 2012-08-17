@@ -94,7 +94,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 				wpbadger_award_send_email($post_id);
 			}
 			
-			echo "<div id='message' class='updated'><p>Badges were awarded successfully. You can view a list of <a href='" . get_bloginfo('url') . "/wp-admin/edit.php?post_type=award'>all awards</a>.</p></div>";
+			echo "<div id='message' class='updated'><p>Badges were awarded successfully. You can view a list of <a href='" . get_bloginfo('wpurl') . "/wp-admin/edit.php?post_type=award'>all awards</a>.</p></div>";
 		} else {
 			echo "<div id='message' class='updated'><p>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
 		}
