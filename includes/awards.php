@@ -252,31 +252,130 @@ add_filter( 'template_include', 'wpbadger_award_template_check' );
 
 function wpbadger_award_template_check() {
 	global $template;
+	
+	$json = get_query_var('json');
 
-	// Get query information
-	$accept = get_query_var( 'accept' );
-	$json = get_query_var( 'json' );
-	$reject = get_query_var( 'reject' );
-
-	// Check if post type 'Awards'
-	if ( get_post_type() == 'award' ) {
-		
-		if ($json) {
-			$template_file = dirname(__FILE__) . '/awards_json.php';
-			return $template_file;
-		} elseif ($accept) {
-			$template_file = dirname(__FILE__) . '/awards_accept.php';
-			return $template_file;
-		} elseif ($reject) {
-			$template_file = dirname(__FILE__) . '/awards_reject.php';
-			return $template_file;
-		} else {
-			$template_file = dirname(__FILE__) . '/awards_template.php';
-			return $template_file;
-		}
+	if ( get_post_type() == 'award' && $json) {
+		$template_file = dirname(__FILE__) . '/awards_json.php';
+		return $template_file;
 	}
-
 	return $template;
+}
+
+add_filter( 'the_content', 'wpbadger_award_content_filter' );
+
+function wpbadger_award_content_filter($content) {
+	$accept = get_query_var( 'accept' );
+	$reject = get_query_var( 'reject' );
+	
+	if (get_post_type() == 'award') {
+		if ($accept) {
+			// Only update the post meta if the previous status was 'Awarded'
+			if (get_post_meta(get_the_ID(), 'wpbadger-award-status', true) == 'Awarded') {
+				update_post_meta(get_the_ID(), 'wpbadger-award-status', 'Accepted');
+			} else {
+				return "<p>This award has already been claimed.</p><p>If you believe this was done in error, please contact the site administrator, <a href='mailto:" . get_settings('admin_email') . "'>" . get_settings('admin_email') . "</p>";
+			}
+
+			// Include administrative plugin helpers
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+			// If WP Super Cache Plugin installed, delete cache files for award post
+			if (is_plugin_active('wp-super-cache/wp-cache.php')) {
+			   wp_cache_post_change(get_the_ID());
+			}
+
+			return "<p>Your award has been successfully accepted and added to your backpack.</p>";
+		} elseif ($reject) {
+			if (get_post_meta(get_the_ID(), 'wpbadger-award-status', true) == 'Awarded') {
+				update_post_meta(get_the_ID(), 'wpbadger-award-status', 'Rejected');
+			} else {
+				return "<p>This badge has successfully been declined.</p>";
+			}
+
+			// Include administrative plugin helpers
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+			// If WP Super Cache Plugin installed, delete cache files for award post
+			if (is_plugin_active('wp-super-cache/wp-cache.php')) {
+			   wp_cache_post_change(get_the_ID());
+			}
+			
+			return "<p>You have successfully declined your badge.</p>";
+		} else {
+			$award_status = get_post_meta(get_the_ID(), 'wpbadger-award-status', true);
+			if ($award_status == 'Awarded') {
+				// Pass query parameters differently based upon site permalink structure
+				if (get_option('permalink_structure') == '') {
+					$query_separator = '&';
+				} else {
+					$query_separator = '?';
+				}
+				
+				return "<script>
+				$(document).ready(function() {
+					// Some js originally based on Badge it Gadget Lite https://github.com/Codery/badge-it-gadget-lite/blob/master/digital-badges/get-my-badge.php
+
+					$('.js-required').hide();
+
+					if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){  //The Issuer API isn't supported on MSIE browsers
+						$('.backPackLink').hide();
+						$('.login-info').hide();
+						$('.browserSupport').show();
+					}
+
+					// Function that issues the badge
+					$('.backPackLink').click(function() {
+						var assertionUrl = '" . get_permalink() . $query_separator . "json=1';
+						OpenBadges.issue([''+assertionUrl+''], function(errors, successes) {					
+							if (successes.length > 0) {
+									$('.backPackLink').hide();
+									$('.login-info').hide();
+									$('#badgeSuccess').show();
+									$.ajax({
+				  						url: '" . get_permalink() . $query_separator . "accept=1',
+				  						type: 'POST',
+										success: function(data, textStatus) {
+											window.location.href = '" . get_permalink() ."';
+										}
+									});
+								}
+							});
+						});
+
+					// Function that rejects the badge
+					$('.rejectBadge').click(function() {
+						$.ajax({
+							url: '" . get_permalink() . $query_separator . "reject=1',
+							type: 'POST',
+							success: function(data, textStatus) {
+								window.location.href = '" . get_permalink() . "';
+							}
+						});
+					});
+				});
+				</script>
+				
+				<p>Congratulations! The " . get_the_title(get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)) . " badge has been awarded.</p><p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the badge.</p>";
+			} elseif ($award_status == 'Rejected') {
+				return "<p>This badge has been successfully declined.</p>";
+			} else {
+				return "<p>This badge was awarded for the following reason:</p><p><em> \"" . get_the_content() .  "\"</em></p>";
+			}
+		}
+	} else {
+		return $content;
+	}
+}
+
+
+add_action('wp_enqueue_scripts', 'wpbadger_award_enqueue_scripts');
+
+function wpbadger_award_enqueue_scripts() {
+	if (get_post_type() == 'award') {
+		wp_enqueue_script('openbadges', 'http://beta.openbadges.org/issuer.js', array(), null);
+		wp_enqueue_script('jquery_ajax', 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js');
+	}
 }
 
 add_action( 'wp_insert_post', 'wpbadger_award_send_email' );
