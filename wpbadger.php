@@ -291,3 +291,16 @@ function wpbadger_disable_quickedit( $actions, $post ) {
     return $actions;
 }
 add_filter( 'post_row_actions', 'wpbadger_disable_quickedit', 10, 2 );
+
+function wpbadger_disable_media_buttons($context) {
+    if( get_post_type() == 'badge' ) {
+		return "<strong>Badge Description:</strong>";
+	}
+	if( get_post_type() == 'award' ) {
+		return "<strong>Description of Awarded Badge:</strong>";
+	}
+	
+	return $context;
+}
+
+add_action( 'media_buttons_context' , 'wpbadger_disable_media_buttons' );
