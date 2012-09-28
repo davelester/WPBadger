@@ -66,7 +66,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 
 <h2>Award Badges in Bulk</h2>
 
-<?php	
+<?php
 	global $wpdb;
 
 	if ($_POST['save']) {
@@ -78,7 +78,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 			$expires = $_REQUEST['wpbadger_award_expires'];
 
 			$email_addresses = split(',', $email_addresses);
-	
+
 			foreach ($email_addresses as $email) {
 				$email = trim($email);
 
@@ -97,11 +97,11 @@ wpbadger_admin_header('Manage Awarded Badges');
 				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge_id);
 				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
 				update_post_meta($post_id, 'wpbadger-award-status','Awarded');
-				
+
 				// Send award email
 				wpbadger_award_send_email($post_id);
 			}
-			
+
 			echo "<div id='message' class='updated'><p>Badges were awarded successfully. You can view a list of <a href='" . get_bloginfo('wpurl') . "/wp-admin/edit.php?post_type=award'>all awards</a>.</p></div>";
 		} else {
 			echo "<div id='message' class='updated'><p>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
@@ -120,13 +120,13 @@ wpbadger_admin_header('Manage Awarded Badges');
 				<p>
 				<select name="wpbadger_award_choose_badge" id="wpbadger_award_choose_badge">
 
-				<?php 	
+				<?php
 				$query = new WP_Query( array( 'post_type' => 'badge' ) );
 
 				while ( $query->have_posts() ) : $query->the_post();
 					$title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
 
-					if ($choose_badge_meta == $title_version) { 
+					if ($choose_badge_meta == $title_version) {
 						$selected = " selected";
 					} else {
 						$selected = "";
@@ -138,9 +138,9 @@ wpbadger_admin_header('Manage Awarded Badges');
 				</select>
 	        </td>
 	        </tr>
-			
+
 	        <tr valign="top">
-			
+
 	        <th scope="row">Email Address (separated by commas)</th>
 	        <td><textarea name="wpbadger_award_email_address" id="wpbadger_award_email_address" rows="4" cols="30"></textarea></td>
 	        </tr>
@@ -223,7 +223,7 @@ function wpbadger_shortcode()
 }
 
 function wpbadger_configure_plugin()
-{ 
+{
 	wpbadger_admin_header('Configure Plugin');
 ?>
 <h2>WPBadger Configuration</h2>
@@ -240,12 +240,12 @@ if ($_POST['save']) {
 		update_option('wpbadger_issuer_org', $_REQUEST['wpbadger_issuer_org']);
 		$success = TRUE;
 	}
-	
+
 	if ($_REQUEST['wpbadger_issuer_contact']) {
 		update_option('wpbadger_issuer_contact', $_REQUEST['wpbadger_issuer_contact']);
 		$success = TRUE;
 	}
-	
+
 	if ($_REQUEST['wpbadger_config_award_email_text']) {
 		update_option('wpbadger_config_award_email_text', $_REQUEST['wpbadger_config_award_email_text']);
 		$success = TRUE;
@@ -307,7 +307,7 @@ function wpbadger_disable_media_buttons($context) {
 	if( get_post_type() == 'award' ) {
 		return "<strong>Description of Awarded Badge:</strong>";
 	}
-	
+
 	return $context;
 }
 
