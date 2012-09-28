@@ -300,63 +300,22 @@ function wpbadger_award_content_filter($content) {
 			if (is_plugin_active('wp-super-cache/wp-cache.php')) {
 			   wp_cache_post_change(get_the_ID());
 			}
-			
+
 			return "<p>You have successfully declined your badge.</p>";
 		} else {
 			$award_status = get_post_meta(get_the_ID(), 'wpbadger-award-status', true);
 			if ($award_status == 'Awarded') {
-				// Pass query parameters differently based upon site permalink structure
-				if (get_option('permalink_structure') == '') {
-					$query_separator = '&';
-				} else {
-					$query_separator = '?';
-				}
-				
-				return "<script>
-				$(document).ready(function() {
-					// Some js originally based on Badge it Gadget Lite https://github.com/Codery/badge-it-gadget-lite/blob/master/digital-badges/get-my-badge.php
 
-					$('.js-required').hide();
+				// Load the necessary javascript, and pass some
+				// URLs into a JS object for use in the script
+				wp_enqueue_script( 'wpbadger_awards', WPBADGER_PLUGIN_URL . 'assets/js/awards.js', array( 'jquery' ) );
+				wp_localize_script( 'wpbadger_awards', 'WPBadger_Awards', array(
+					'accept_url'   => add_query_arg( 'accept', '1', get_permalink() ),
+					'reject_url'   => add_query_arg( 'reject', '1', get_permalink() ),
+					'redirect_url' => get_permalink(),
+				) );
 
-					if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){  //The Issuer API isn't supported on MSIE browsers
-						$('.backPackLink').hide();
-						$('.login-info').hide();
-						$('.browserSupport').show();
-					}
-
-					// Function that issues the badge
-					$('.backPackLink').click(function() {
-						var assertionUrl = '" . get_permalink() . $query_separator . "json=1';
-						OpenBadges.issue([''+assertionUrl+''], function(errors, successes) {					
-							if (successes.length > 0) {
-									$('.backPackLink').hide();
-									$('.login-info').hide();
-									$('#badgeSuccess').show();
-									$.ajax({
-				  						url: '" . get_permalink() . $query_separator . "accept=1',
-				  						type: 'POST',
-										success: function(data, textStatus) {
-											window.location.href = '" . get_permalink() ."';
-										}
-									});
-								}
-							});
-						});
-
-					// Function that rejects the badge
-					$('.rejectBadge').click(function() {
-						$.ajax({
-							url: '" . get_permalink() . $query_separator . "reject=1',
-							type: 'POST',
-							success: function(data, textStatus) {
-								window.location.href = '" . get_permalink() . "';
-							}
-						});
-					});
-				});
-				</script>
-				
-				<p>Congratulations! The " . get_the_title(get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)) . " badge has been awarded.</p><p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the badge.</p>";
+				return "<p>Congratulations! The " . get_the_title(get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)) . " badge has been awarded.</p><p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the badge.</p>";
 			} elseif ($award_status == 'Rejected') {
 				return "<p>This badge has been successfully declined.</p>";
 			} else {

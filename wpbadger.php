@@ -16,6 +16,14 @@ add_action('openbadges_shortcode', 'wpbadger_shortcode');
 register_activation_hook(__FILE__,'wpbadger_activate');
 register_deactivation_hook(__FILE__,'wpbadger_deactivate');
 
+if ( ! defined( 'WPBADGER_PLUGIN_DIR' ) ) {
+	define( 'WPBADGER_PLUGIN_DIR', trailingslashit( dirname(__FILE__) ) );
+}
+
+if ( ! defined( 'WPBADGER_PLUGIN_URL' ) ) {
+	define( 'WPBADGER_PLUGIN_URL', trailingslashit( plugins_url( 'WPBadger' ) ) );
+}
+
 require_once( dirname(__FILE__) . '/includes/badges.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
 
