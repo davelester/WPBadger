@@ -374,7 +374,7 @@ add_action('wp_enqueue_scripts', 'wpbadger_award_enqueue_scripts');
 function wpbadger_award_enqueue_scripts() {
 	if (get_post_type() == 'award') {
 		wp_enqueue_script('openbadges', 'http://beta.openbadges.org/issuer.js', array(), null);
-		wp_enqueue_script('jquery_ajax', 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js');
+		wp_enqueue_script('jquery');
 	}
 }
 
