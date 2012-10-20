@@ -91,7 +91,12 @@ function wpbadger_save_badge_meta( $post_id, $post ) {
 	if ( !current_user_can( $post_type->cap->edit_post, $post_id ) )
 		return $post_id;
 
-	$new_meta_value = $_POST['wpbadger-badge-version'];
+    $new_meta_value = $_POST['wpbadger-badge-version'];
+    if (preg_match( '/^\d+$/', $new_meta_value )) {
+        $new_meta_value .= '.0';
+    } elseif (!preg_match( '/^\d+(\.\d+)+$/', $new_meta_value )) {
+        $new_meta_value = '1.0';
+    }
 
 	$meta_key = 'wpbadger-badge-version';
 	$meta_value = get_post_meta( $post_id, $meta_key, true );
