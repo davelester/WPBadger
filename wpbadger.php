@@ -51,19 +51,6 @@ function wpbadger_admin_menu()
 	add_submenu_page('edit.php?post_type=award','WPBadger | Bulk Award Badges','Bulk Award Badges','manage_options','wpbadger_bulk_award_badges','wpbadger_bulk_award_badges');
 }
 
-/* TODO: problem with jquery ui theme
-function wpbadger_award_badges_scripts()
-{
-    if ($_GET[ 'post_type' ] != 'award')
-        return;
-
-    wp_enqueue_script( 'jquery-ui-datepicker' );
-    wp_enqueue_style( 'jquery.ui.theme', plugins_url( 'css/jquery-ui-1.9.0.custom.css', __FILE__ ) );
-}
-add_action( 'admin_enqueue_scripts', 'wpbadger_award_badges_scripts' );
-add_action( 'admin_footer', 'wpbadger_admin_footer' );
-*/
-
 function wpbadger_bulk_award_badges()
 {
 wpbadger_admin_header('Manage Awarded Badges');
@@ -185,19 +172,6 @@ function wpbadger_admin_header($tab)
 <div class="wrap wpbadger-wrap">
 <?php
 }
-
-/* TODO: problem with jquery ui theme
-function wpbadger_admin_footer()
-{
-?>
-    <script type="text/javascript">
-    (function ($) { $(function () {
-        $('#wpbadger_award_expires').datepicker({ dateFormat: 'yy-mm-dd' });
-    }); })( jQuery );
-    </script>
-<?php
-}
-*/
 
 // Checks two mandatory fields of configured. If options are empty or don't exist, return FALSE
 function wpbadger_configured()
