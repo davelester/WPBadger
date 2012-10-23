@@ -83,7 +83,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 			$evidence = $_REQUEST['wpbadger_award_evidence'];
 			$expires = $_REQUEST['wpbadger_award_expires'];
 
-			$email_addresses = split(',', $email_addresses);
+			$email_addresses = preg_split('/[\n,]/', $email_addresses, -1, PREG_SPLIT_NO_EMPTY);
 	
 			foreach ($email_addresses as $email) {
 				$email = trim($email);
