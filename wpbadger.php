@@ -69,16 +69,17 @@ wpbadger_admin_header('Manage Awarded Badges');
 <?php
 	global $wpdb;
 
-	if ($_POST['save']) {
-		if ($_REQUEST['wpbadger_award_choose_badge'] && $_REQUEST['wpbadger_award_email_address']) {
+	if ($_POST['publish']) {
+        if ($_REQUEST['wpbadger_award_choose_badge'] && $_REQUEST['wpbadger_award_email_address']) {
+            check_admin_referer( 'wpbadger_bulk_award_badges' );
 
 			$badge_id = $_REQUEST['wpbadger_award_choose_badge'];
 			$email_addresses = $_REQUEST['wpbadger_award_email_address'];
 			$evidence = $_REQUEST['wpbadger_award_evidence'];
 			$expires = $_REQUEST['wpbadger_award_expires'];
 
-			$email_addresses = split(',', $email_addresses);
-
+			$email_addresses = preg_split('/[\n,]/', $email_addresses, -1, PREG_SPLIT_NO_EMPTY);
+	
 			foreach ($email_addresses as $email) {
 				$email = trim($email);
 
@@ -109,11 +110,12 @@ wpbadger_admin_header('Manage Awarded Badges');
 	}
 ?>
 
-	<form method="POST" action="" name="wpbadger_bulk_award_badges">
+    <form method="POST" action="" name="wpbadger_bulk_award_badges">
+        <?php wp_nonce_field( 'wpbadger_bulk_award_badges' ); ?>
 
 	    <table class="form-table">
 	        <tr valign="top">
-	        <th scope="row">Choose Badge</th>
+	        <th scope="row"><label for="wpbadger_award_choose_badge">Badge</label></th>
 	        <td>
 				<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger_award_choose_badge', true );?>
 
@@ -140,24 +142,33 @@ wpbadger_admin_header('Manage Awarded Badges');
 	        </tr>
 
 	        <tr valign="top">
-
 	        <th scope="row">Email Address (separated by commas)</th>
 	        <td><textarea name="wpbadger_award_email_address" id="wpbadger_award_email_address" rows="4" cols="30"></textarea></td>
+			
+	        <th scope="row"><label for="wpbadger_award_email_address">Email Address</label></th>
+            <td>
+                <textarea name="wpbadger_award_email_address" id="wpbadger_award_email_address" rows="5" cols="45"></textarea>
+                <br />
+                Separate multiple email addresses with commas, or put one per line.
+            </td>
 	        </tr>
 
 	        <tr valign="top">
-	        <th scope="row">Evidence</th>
-	        <td><textarea name="wpbadger_award_evidence" id="wpbadger_award_evidence" rows="4" cols="30"></textarea></td>
+	        <th scope="row"><label for="wpbadger_award_evidence">Evidence</label></th>
+	        <td><textarea name="wpbadger_award_evidence" id="wpbadger_award_evidence" class="large-text" rows="5" cols="45"></textarea></td>
 	        </tr>
 
 	        <tr valign="top">
-	        <th scope="row">Expiration Date (optional field, YY-MM-DD format)</th>
-	        <td><input type="text" name="wpbadger_award_expires" id="title" /></td>
+	        <th scope="row"><label for="wpbadger_award_expires">Expiration Date</label></th>
+            <td>
+                <input type="text" name="wpbadger_award_expires" id="wpbadger_award_expires" />
+                <br />
+                Optional. Enter as "YY-MM-DD".</td>
 	        </tr>
 	    </table>
 
 	    <p class="submit">
-	    <input type="submit" class="button-primary" name="save" value="<?php _e('Save Changes') ?>" />
+	    <input type="submit" class="button-primary" name="publish" value="<?php _e('Publish') ?>" />
 	    </p>
 
 	</form>
@@ -168,7 +179,7 @@ wpbadger_admin_header('Manage Awarded Badges');
 
 function wpbadger_admin_header($tab)
 {?>
-<div class="wrap">
+<div class="wrap wpbadger-wrap">
 <?php
 }
 
@@ -230,6 +241,7 @@ function wpbadger_configure_plugin()
 
 <?php
 if ($_POST['save']) {
+    check_admin_referer( 'wpbadger_config' );
 
 	if ($_REQUEST['wpbadger_issuer_name']) {
 		update_option('wpbadger_issuer_name', $_REQUEST['wpbadger_issuer_name']);
@@ -258,27 +270,28 @@ if ($_POST['save']) {
 ?>
 
 <form method="POST" action="" name="wpbadger_config">
+    <?php wp_nonce_field( 'wpbadger_config' ); ?>
 
     <table class="form-table">
 
         <tr valign="top">
-        <th scope="row">Issuing Agent Name</th>
-        <td><input type="text" name="wpbadger_issuer_name" value="<?php echo get_option('wpbadger_issuer_name'); ?>" /></td>
+        <th scope="row"><label for="wpbadger_issuer_name">Issuing Agent Name</label></th>
+        <td><input type="text" id="wpbadger_issuer_name" name="wpbadger_issuer_name" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_name') ); ?>" /></td>
         </tr>
 
         <tr valign="top">
-        <th scope="row">Issuing Organization</th>
-        <td><input type="text" name="wpbadger_issuer_org" value="<?php echo get_option('wpbadger_issuer_org'); ?>" /></td>
+        <th scope="row"><label for="wpbadger_issuer_org">Issuing Organization</label></th>
+        <td><input type="text" id="wpbadger_issuer_org" name="wpbadger_issuer_org" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_org') ); ?>" /></td>
         </tr>
 
         <tr valign="top">
-        <th scope="row">Contact Email Address</th>
-        <td><input type="text" name="wpbadger_issuer_contact" value="<?php echo get_option('wpbadger_issuer_contact'); ?>" /></td>
+        <th scope="row"><label for="wpbadger_issuer_contact">Contact Email Address</label></th>
+        <td><input type="text" id="wpbadger_issuer_contact" name="wpbadger_issuer_contact" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_contact') ); ?>" /></td>
         </tr>
 
 		<tr valign="top">
-		<th scope="row">Badge Award Email Text</th>
-		<td><textarea name="wpbadger_config_award_email_text" id="wpbadger_config_award_email_text" rows="4" cols="30"><?php echo get_option('wpbadger_config_award_email_text'); ?></textarea></td>
+		<th scope="row"><label for="wpbadger_config_award_email_text">Badge Award Email Text</label></th>
+		<td><textarea name="wpbadger_config_award_email_text" id="wpbadger_config_award_email_text" class="large-text" rows="5" cols="45"><?php echo esc_attr( get_option('wpbadger_config_award_email_text') ); ?></textarea></td>
 		</tr>
     </table>
 
