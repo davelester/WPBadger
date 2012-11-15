@@ -233,16 +233,25 @@ function wpbadger_configure_plugin()
 if ($_POST['save']) {
     check_admin_referer( 'wpbadger_config' );
 
-	if ($_REQUEST['wpbadger_issuer_name']) {
-		update_option('wpbadger_issuer_name', $_REQUEST['wpbadger_issuer_name']);
-		$success = TRUE;
-	}
+    if (!get_option( 'wpbadger_issuer_lock' ) || is_super_admin())
+    {
+        if ($_REQUEST['wpbadger_issuer_name']) {
+            update_option('wpbadger_issuer_name', $_REQUEST['wpbadger_issuer_name']);
+            $success = TRUE;
+        }
 
-	if ($_REQUEST['wpbadger_issuer_org']) {
-		update_option('wpbadger_issuer_org', $_REQUEST['wpbadger_issuer_org']);
-		$success = TRUE;
-	}
-	
+        if ($_REQUEST['wpbadger_issuer_org']) {
+            update_option('wpbadger_issuer_org', $_REQUEST['wpbadger_issuer_org']);
+            $success = TRUE;
+        }
+
+        if (is_super_admin())
+        {
+            update_option('wpbadger_issuer_lock', (bool)$_REQUEST['wpbadger_issuer_lock']);
+            $success = TRUE;
+        }
+    }
+
 	if ($_REQUEST['wpbadger_issuer_contact']) {
 		update_option('wpbadger_issuer_contact', $_REQUEST['wpbadger_issuer_contact']);
 		$success = TRUE;
@@ -257,6 +266,8 @@ if ($_POST['save']) {
 		echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
 	}
 }
+
+$issuer_disabled = (get_option('wpbadger_issuer_lock') && !is_super_admin()) ? 'disabled="disabled"' : '';
 ?>
 
 <form method="POST" action="" name="wpbadger_config">
@@ -266,13 +277,26 @@ if ($_POST['save']) {
 
         <tr valign="top">
         <th scope="row"><label for="wpbadger_issuer_name">Issuing Agent Name</label></th>
-        <td><input type="text" id="wpbadger_issuer_name" name="wpbadger_issuer_name" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_name') ); ?>" /></td>
+        <td><input type="text" id="wpbadger_issuer_name" name="wpbadger_issuer_name" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_name') ); ?>" <?php echo $issuer_disabled ?> /></td>
         </tr>
 
         <tr valign="top">
         <th scope="row"><label for="wpbadger_issuer_org">Issuing Organization</label></th>
-        <td><input type="text" id="wpbadger_issuer_org" name="wpbadger_issuer_org" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_org') ); ?>" /></td>
+        <td><input type="text" id="wpbadger_issuer_org" name="wpbadger_issuer_org" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_org') ); ?>" <?php echo $issuer_disabled ?> /></td>
         </tr>
+
+        <?php
+        if (is_super_admin()) {
+            ?>
+
+            <tr valign="top">
+            <th scope="row"></th>
+            <td><label><input type="checkbox" id="wpbadger_issuer_lock" name="wpbadger_issuer_lock" value="1" <?php echo get_option('wpbadger_issuer_lock') ? 'checked="checked"' : '' ?> /> Disable editting of issuer information for non-admins.</label></td>
+            </tr>
+            
+            <?php
+        }
+        ?>
 
         <tr valign="top">
         <th scope="row"><label for="wpbadger_issuer_contact">Contact Email Address</label></th>
