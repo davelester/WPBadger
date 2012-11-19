@@ -104,97 +104,76 @@ function wpbadger_awards_meta_boxes_setup() {
 // Create metaboxes for post editor
 function wpbadger_add_award_meta_boxes() {
 
-	add_meta_box(
-		'wpbadger-award-choose-badge',		// Unique ID
-		esc_html__( 'Choose Badge', 'example' ),	// Title
-		'wpbadger_award_choose_badge_meta_box',		// Callback function
-		'award',						// Admin page (or post type)
-		'side',							// Context
-		'default'						// Priority
-	);
-	
-	add_meta_box(
-		'wpbadger-award-email-address',		// Unique ID
-		esc_html__( 'Email Address', 'example' ),	// Title
-		'wpbadger_award_email_address_meta_box',		// Callback function
-		'award',						// Admin page (or post type)
-		'side',							// Context
-		'default'						// Priority
-	);
-
-	add_meta_box(
-		'wpbadger-award-status',		// Unique ID
-		esc_html__( 'Award Status', 'example' ),	// Title
-		'wpbadger_award_status_meta_box',		// Callback function
-		'award',						// Admin page (or post type)
-		'side',							// Context
-		'default'						// Priority
-	);
+    add_meta_box(
+        'wpbadger-award-information',
+        esc_html__( 'Award Information', 'example' ),
+        'wpbadger_award_information_meta_box',
+        'award',
+        'side',
+        'default'
+    );
 }
 
-// Display metaboxes
-function wpbadger_award_choose_badge_meta_box( $object, $box ) { ?>
+function wpbadger_award_information_meta_box( $object, $box ) {
+	wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' );
 
-	<?php wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' ); ?>
+    $is_published = ('publish' == $object->post_status || 'private' == $object->post_status);
+    $award_badge_id = get_post_meta($object->ID, 'wpbadger-award-choose-badge', true);
+    $award_email = get_post_meta($object->ID, 'wpbadger-award-email-address', true);
+    $award_status = get_post_meta($object->ID, 'wpbadger-award-status', true);
 	
-	<?php $chosen_badge_id = get_post_meta( $object->ID, 'wpbadger-award-choose-badge', true );?>
-	
-	<p>
-	<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">
-	
-	<?php 	
-	$query = new WP_Query( array( 'post_type' => 'badge' ) );
-	
-	while ( $query->have_posts() ) : $query->the_post();
-		$badge_title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
+    ?>
+    <div id="wpbadger-award-actions">
+	<div class="wpbadger-award-section wpbadger-award-badge">
+    <label for="wpbadger-award-choose-badge">Badge: </label>
+    
+    <?php 	
+    if (!$is_published || current_user_can('manage_options')) {
+        echo '<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">';
 
-		// As we iterate through the list of badges, if the chosen badge has the same ID then mark it as selected
-		if ($chosen_badge_id == get_the_ID()) { 
-			$selected = " selected";
-		} else {
-			$selected = "";
-		}
-		echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";
-		echo $badge_title_version . "</option>";
-	endwhile;
+        $query = new WP_Query( array( 'post_type' => 'badge' ) );
+        while ( $query->have_posts() ) : $query->the_post();
+            $badge_title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
+
+            // As we iterate through the list of badges, if the chosen badge has the same ID then mark it as selected
+            if ($award_badge_id == get_the_ID()) { 
+                $selected = ' selected="selected"';
+            } else {
+                $selected = '';
+            }
+            echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";
+            echo $badge_title_version . "</option>";
+        endwhile;
+        wp_reset_postdata();
+
+        echo '</select>';
+    } else {
+        $badge_title_version = get_the_title( $award_badge_id ) . " (" . get_post_meta($award_badge_id, 'wpbadger-badge-version', true) . ")";
+        echo "<b>" . $badge_title_version . "</b>";
+    }
 	?>
 	
-	</select>
-	</p>
-<?php }
+	</div>
+    <div class="wpbadger-award-section wpbadger-award-email-address">
+        <label for="wpbadger-award-email-address">Email Address:</label><br />
+    <?php
+    if (!$is_published || current_user_can('manage_options')) {
+        echo '<input type="text" name="wpbadger-award-email-address" id="wpbadger-award-email-address" value="' . esc_attr($award_email) . '" />';
+    } else {
+        echo '<b>' . $award_email . '</b>';
+    }
+    ?>
 
-function wpbadger_award_email_address_meta_box( $object, $box ) { ?>
+	</div>
 
-	<p>
-		<input class="widefat" type="text" name="wpbadger-award-email-address" id="wpbadger-award-email-address" value="<?php echo esc_attr( get_post_meta( $object->ID, 'wpbadger-award-email-address', true ) ); ?>" size="30" />
-	</p>
-<?php }
+    <?php if ($is_published) { ?>
+        <div class="wpbadger-award-section wpbadger-award-status">
+        Status: <b><?php echo esc_html($award_status) ?></b>
+        </div>
+    <?php }
 
-function wpbadger_award_status_meta_box( $object, $box ) { ?>
-	<p>
-	<select name="wpbadger-award-status" id="wpbadger-award-status">
-
-	<?php
-	$award_status = get_post_meta( $object->ID, 'wpbadger-award-status', true );
-	$award_status_options = array('Awarded', 'Accepted', 'Rejected');
-	
-	foreach ($award_status_options as $status_option) {
-
-		// Mark the 
-		if ($status_option == $award_status) { 
-			$selected = " selected";
-		} else {
-			$selected = "";
-		}
-		
-		echo "<option name='wpbadger-award-status'" . $selected . ">" . $status_option . "</option>";
-	}
-	?>
-	
-	</select>
-	</p>
-
-<?php }
+    echo '</div>';
+}
 
 function wpbadger_save_award_meta( $post_id, $post ) {
 

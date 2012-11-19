@@ -11,6 +11,8 @@ Author: Dave Lester
 Author URI: http://www.davelester.org
 */
 
+add_action('admin_init', 'wpbadger_admin_init');
+add_action('admin_head', 'wpbadger_admin_head');
 add_action('admin_menu', 'wpbadger_admin_menu');
 add_action('openbadges_shortcode', 'wpbadger_shortcode');
 register_activation_hook(__FILE__,'wpbadger_activate');
@@ -43,6 +45,16 @@ function wpbadger_deactivate()
 {
 	global $wp_rewrite;
 	$wp_rewrite->flush_rules();
+}
+
+function wpbadger_admin_init()
+{
+    wp_register_style('wpbadger-admin-styles', plugins_url('css/admin-styles.css', __FILE__));
+}
+
+function wpbadger_admin_head()
+{
+    wp_enqueue_style('wpbadger-admin-styles');
 }
 
 function wpbadger_admin_menu()
