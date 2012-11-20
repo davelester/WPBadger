@@ -39,7 +39,9 @@ class WPbadger_Award_Schema {
 
 		$args = array(
 			'labels' => $labels,
-			'public' => true,
+            'public' => true,
+            'exclude_from_search' => true,
+            'publicly_queryable' => false,
 			'query_var' => true,
 			'rewrite'      => array(
 				'slug'       => 'awards',
