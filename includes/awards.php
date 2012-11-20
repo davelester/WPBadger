@@ -443,7 +443,15 @@ function wpbadger_award_save_title($data, $postarr) {
 
 // Generate the award slug. Shared by interface to award single badges, as well as bulk
 function wpbadger_award_generate_slug() {
-	$slug = rand(100000000000000, 999999999999999);
+    $slug = '';
+    if (function_exists( 'openssl_random_pseudo_bytes' )) {
+        $data = openssl_random_pseudo_bytes( 16 );
+        if ($data !== false)
+            $slug = bin2hex( $data );
+    }
+
+    if (!$slug)
+        $slug = rand(100000000000000, 999999999999999);
 	
 	return $slug;
 }
