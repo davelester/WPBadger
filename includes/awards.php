@@ -41,7 +41,6 @@ class WPbadger_Award_Schema {
 			'labels' => $labels,
             'public' => true,
             'exclude_from_search' => true,
-            'publicly_queryable' => false,
 			'query_var' => true,
 			'rewrite'      => array(
 				'slug'       => 'awards',
@@ -215,11 +214,15 @@ function wpbadger_save_award_meta( $post_id, $post ) {
         }
     }
 
+    if ( get_post_meta( $post_id, 'wpbadger-award-status', true ) == false ) {
+        add_post_meta( $post_id, 'wpbadger-award-status', 'Awarded' );
+    }
+
 	// Add the salt only the first time, and do not update if already exists
 	if ( get_post_meta( $post_id, 'wpbadger-award-salt', true ) == false ) {
 	    $salt = substr( str_shuffle( str_repeat( "0123456789abcdefghijklmnopqrstuvwxyz", 8 ) ), 0, 8 );
 		add_post_meta( $post_id, 'wpbadger-award-salt', $salt );
-	}
+    }
 }
 
 add_filter( 'template_include', 'wpbadger_award_template_check' );
