@@ -96,6 +96,7 @@ new WPbadger_Award_Schema();
 
 add_action( 'load-post.php', 'wpbadger_awards_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'wpbadger_awards_meta_boxes_setup' );
+add_action( 'parse_request', 'wpbadger_awards_parse_request' );
 
 function wpbadger_awards_meta_boxes_setup() {
 	add_action( 'add_meta_boxes', 'wpbadger_add_award_meta_boxes' );
@@ -113,6 +114,48 @@ function wpbadger_add_award_meta_boxes() {
         'side',
         'default'
     );
+}
+
+function wpbadger_awards_parse_request( &$arg ) {
+    $arg_post_type  = $arg->query_vars[ 'post_type' ];
+    $arg_name       = $arg->query_vars[ 'name' ];
+    $idx            = false;
+    
+    # Only restrict listings of the award post_type
+    if (!isset( $arg->query_vars[ 'post_type' ] ))
+        return;
+    if (is_array( $arg_post_type )) {
+        $idx = array_search( 'award', $arg_post_type );
+        if (!$idx)
+            return;
+    } else {
+        if ($arg_post_type != 'award')
+            return;
+    }
+
+    # Don't restrict the listing if a user is logged in and has permission
+    # to edit_posts
+	$post_type = get_post_type_object( 'award' );
+	if (current_user_can( $post_type->cap->edit_posts ))
+		return;
+
+    # Allow only if we're querying by a single name
+    if (is_array( $arg_name )) {
+        $first = reset( $arg_name );
+        if (count( $arg_name ) == 1 && !empty( $first ))
+            return;
+    } else {
+        if (!empty( $arg_name ))
+            return;
+    }
+
+    # If we reach this point then it's an unpriviledged user querying
+    # all the awards. Don't allow this
+    if (is_array( $arg_post_type )) {
+        unset( $arg->query_vars[ 'post_type' ][ $idx ] );
+    } else {
+        unset( $arg->query_vars[ 'post_type' ] );
+    }
 }
 
 function wpbadger_award_information_meta_box( $object, $box ) {
