@@ -126,7 +126,7 @@ function wpbadger_awards_parse_request( &$arg ) {
         return;
     if (is_array( $arg_post_type )) {
         $idx = array_search( 'award', $arg_post_type );
-        if (!$idx)
+        if ($idx === false)
             return;
     } else {
         if ($arg_post_type != 'award')
