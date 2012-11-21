@@ -59,8 +59,17 @@ function wpbadger_admin_head()
 
 function wpbadger_admin_menu()
 {
+    $award_type = get_post_type_object('award');
+
 	add_submenu_page('options-general.php','Configure WPBadger Plugin','WPBadger Config','manage_options','wpbadger_configure_plugin','wpbadger_configure_plugin');
-	add_submenu_page('edit.php?post_type=award','WPBadger | Bulk Award Badges','Bulk Award Badges','manage_options','wpbadger_bulk_award_badges','wpbadger_bulk_award_badges');
+    add_submenu_page(
+        'edit.php?post_type=award',
+        'WPBadger | Bulk Award Badges',
+        'Bulk Award Badges',
+        (get_option('wpbadger_bulk_awards_allow_all') ? $award_type->cap->edit_posts : 'manage_options'),
+        'wpbadger_bulk_award_badges',
+        'wpbadger_bulk_award_badges'
+    );
 }
 
 function wpbadger_bulk_award_badges()
@@ -249,34 +258,29 @@ if ($_POST['save']) {
     {
         if ($_REQUEST['wpbadger_issuer_name']) {
             update_option('wpbadger_issuer_name', $_REQUEST['wpbadger_issuer_name']);
-            $success = TRUE;
         }
 
         if ($_REQUEST['wpbadger_issuer_org']) {
             update_option('wpbadger_issuer_org', $_REQUEST['wpbadger_issuer_org']);
-            $success = TRUE;
         }
 
         if (is_super_admin())
         {
             update_option('wpbadger_issuer_lock', (bool)$_REQUEST['wpbadger_issuer_lock']);
-            $success = TRUE;
         }
     }
 
 	if ($_REQUEST['wpbadger_issuer_contact']) {
 		update_option('wpbadger_issuer_contact', $_REQUEST['wpbadger_issuer_contact']);
-		$success = TRUE;
-	}
-	
-	if ($_REQUEST['wpbadger_config_award_email_text']) {
-		update_option('wpbadger_config_award_email_text', $_REQUEST['wpbadger_config_award_email_text']);
-		$success = TRUE;
 	}
 
-	if ($success) {
-		echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
+    update_option('wpbadger_bulk_awards_allow_all', (bool)$_REQUEST['wpbadger_bulk_awards_allow_all']);
+
+	if ($_REQUEST['wpbadger_config_award_email_text']) {
+		update_option('wpbadger_config_award_email_text', $_REQUEST['wpbadger_config_award_email_text']);
 	}
+
+    echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
 }
 
 $issuer_disabled = (get_option('wpbadger_issuer_lock') && !is_super_admin()) ? 'disabled="disabled"' : '';
@@ -313,6 +317,11 @@ $issuer_disabled = (get_option('wpbadger_issuer_lock') && !is_super_admin()) ? '
         <tr valign="top">
         <th scope="row"><label for="wpbadger_issuer_contact">Contact Email Address</label></th>
         <td><input type="text" id="wpbadger_issuer_contact" name="wpbadger_issuer_contact" class="regular-text" value="<?php echo esc_attr( get_option('wpbadger_issuer_contact') ); ?>" /></td>
+        </tr>
+
+        <tr valign="top">
+        <th scope="row"></th>
+        <td><label><input type="checkbox" name="wpbadger_bulk_awards_allow_all" id="wpbadger_bulk_awards_allow_all" value="1" <?php echo get_option('wpbadger_bulk_awards_allow_all') ? 'checked="checked"' : '' ?> /> Allow all users to bulk award badges.</label></td>
         </tr>
 
 		<tr valign="top">
