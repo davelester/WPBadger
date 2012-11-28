@@ -97,7 +97,7 @@ new WPbadger_Award_Schema();
 add_action( 'load-post.php', 'wpbadger_awards_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'wpbadger_awards_meta_boxes_setup' );
 add_action( 'parse_request', 'wpbadger_awards_parse_request' );
-add_action( 'posts_search', 'wpbadger_awards_posts_search', 10, 2 );
+add_filter( 'posts_search', 'wpbadger_awards_posts_search', 10, 2 );
 
 function wpbadger_awards_meta_boxes_setup() {
 	add_action( 'add_meta_boxes', 'wpbadger_add_award_meta_boxes' );
