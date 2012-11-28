@@ -97,6 +97,7 @@ new WPbadger_Award_Schema();
 add_action( 'load-post.php', 'wpbadger_awards_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'wpbadger_awards_meta_boxes_setup' );
 add_action( 'parse_request', 'wpbadger_awards_parse_request' );
+add_action( 'posts_search', 'wpbadger_awards_posts_search', 10, 2 );
 
 function wpbadger_awards_meta_boxes_setup() {
 	add_action( 'add_meta_boxes', 'wpbadger_add_award_meta_boxes' );
@@ -155,6 +156,33 @@ function wpbadger_awards_parse_request( &$arg ) {
         unset( $arg->query_vars[ 'post_type' ][ $idx ] );
     } else {
         unset( $arg->query_vars[ 'post_type' ] );
+    }
+}
+
+function wpbadger_awards_posts_search( $search, &$query ) {
+    # Only add the metadata in a search
+    if (!$query->is_search)
+        return $search;
+    # Only check for posts that are awards, or might return awards
+    $post_type = $query->query_vars[ 'post_type' ];
+    if (is_array( $post_type )) {
+        if (count( array_intersect( array( 'any', 'award' ), $post_type ) ) == 0)
+            return $search;
+    } else {
+        if ($post_type != 'any' && $post_type != 'award')
+            return $search;
+    }
+
+    if (is_email( $query->query_vars[ 's' ] )) {
+        # If it is an email then only search on the email address. Clear
+        # out the other calculated search
+        $query->meta_query->queries[] = array(
+            'key'   => 'wpbadger-award-email-address',
+            'value' => $query->query_vars[ 's' ]
+        );
+        return '';
+    } else {
+        return $search;
     }
 }
 
