@@ -19,6 +19,7 @@ register_activation_hook(__FILE__,'wpbadger_activate');
 register_deactivation_hook(__FILE__,'wpbadger_deactivate');
 
 require_once( dirname(__FILE__) . '/includes/badges.php' );
+require_once( dirname(__FILE__) . '/includes/badges_stats.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
 
 global $wpbadger_db_version;
