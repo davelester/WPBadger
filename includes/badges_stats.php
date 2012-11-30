@@ -49,8 +49,27 @@ if (!class_exists( 'WP_List_Table' ))
 
 class WPBadger_Badges_Stats_List_Table extends WP_List_Table
 {
-    function __construct()
+    var $sort_key = 'title';
+    var $sort_dir = 'ASC';
+
+    function __construct( $sort_key = '', $sort_dir = '' )
     {
+        if (!empty( $sort_key ))
+        {
+            $valid = $this->get_sortable_columns();
+            if (!isset( $valid[ $sort_key ] ))
+                wp_die( "Invalid sort key: $sort_key" );
+            $this->sort_key = $sort_key;
+        }
+
+        if (!empty( $sort_dir ))
+        {
+            $sort_dir = strtoupper( $sort_dir );
+            if ($sort_dir != 'ASC' && $sort_dir != 'DESC')
+                wp_die( "Invalid sort direction: $sort_dir" );
+            $this->sort_dir = $sort_dir;
+        }
+
         parent::__construct( array(
             'singular'  => 'Badge',
             'plural'    => 'Badges',
@@ -83,6 +102,19 @@ class WPBadger_Badges_Stats_List_Table extends WP_List_Table
         );
     }
 
+    function get_sortable_columns()
+    {
+        $cols = array(
+            'title'     => array( 'title', false ),
+            'Count'     => array( 'Count', false ),
+            'Accepted'  => array( 'Accepted', false ),
+            'Rejected'  => array( 'Rejected', false )
+        );
+        $cols[ $this->sort_key ][ 1 ] = true;
+
+        return $cols;
+    }
+
     function prepare_items()
     {
         $columns    = $this->get_columns();
@@ -93,11 +125,18 @@ class WPBadger_Badges_Stats_List_Table extends WP_List_Table
 
         $stats = array();
 
-        # First, run the query that gets all the published badges
-        $query = new WP_Query( array(
+        # First, run the query that gets all the published badges.
+        # If we are sorting by title, do the sorting in the database
+        $args = array(
             'post_type'     => 'badge',
             'post_status'   => 'publish'
-        ) );
+        );
+        if ($this->sort_key == 'title')
+        {
+            $args[ 'orderby' ]  = $this->sort_key;
+            $args[ 'order' ]    = $this->sort_dir;
+        }
+        $query = new WP_Query( $args );
         while ($query->next_post())
         {
             $stats[ $query->post->ID ] = array(
@@ -128,12 +167,37 @@ class WPBadger_Badges_Stats_List_Table extends WP_List_Table
             $stats[ $badge_id ][ $award_status ]++;
         }
 
+        # Sorting by title is done in the database. Everything else, here
+        if ($this->sort_key != 'title')
+            uasort( $stats, array( $this, '_sort_items_callback' ) );
+
         $this->items = $stats;
         $this->set_pagination_args( array(
             'total_items'   => count( $stats ),
             'per_page'      => count( $stats ),
             'total_pages'   => 1
         ) );
+    }
+
+    function _sort_items_callback( $a, $b )
+    {
+        # Order by the sort key first, then title if the sort_key isn't title
+        if ($a[ $this->sort_key ] < $b[ $this->sort_key ])
+        {
+            return $this->sort_dir == 'ASC' ? -1 : 1;
+        }
+        elseif ($a[ $this->sort_key ] > $b[ $this->sort_key ])
+        {
+            return $this->sort_dir == 'ASC' ? 1 : -1;
+        }
+        elseif ($this->sort_key != 'title')
+        {
+            return strcasecmp( $a[ 'title' ], $b[ 'title' ] );
+        }
+        else
+        {
+            return 0;
+        }
     }
 }
 
@@ -153,7 +217,7 @@ function wpbadger_badges_stats_admin_menu()
 
 function wpbadger_badges_stats_page()
 {
-    $table = new WPBadger_Badges_Stats_List_Table();
+    $table = new WPBadger_Badges_Stats_List_Table( $_REQUEST[ 'orderby' ], $_REQUEST[ 'order' ] );
     $table->prepare_items();
 
 ?>
