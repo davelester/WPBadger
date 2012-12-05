@@ -1,23 +1,39 @@
 <?php
 
-class WPBadger_Badge_Schema {
-	private $post_type_name;
+class WPBadger_Badge
+{
+    private $post_type_name;
+    private $post_capability_type;
 
-	function __construct() {
-		$this->set_post_type_name();
-
-		add_action( 'init', array( &$this, 'register_post_type' ) );
+    function __construct()
+    {
+		add_action( 'init', array( $this, 'init' ) );
 	}
 
-	public function get_post_type_name() {
+    public function get_post_capability_type()
+    {
+        return $this->post_capability_type;
+    }
+
+    public function get_post_type_name()
+    {
 		return $this->post_type_name;
 	}
 
-	private function set_post_type_name() {
+    private function set_post_capability_type()
+    {
+        $this->post_capability_type = apply_filters( 'wpbadger_badge_post_capability_type', 'post' );
+    }
+
+    private function set_post_type_name()
+    {
 		$this->post_type_name = apply_filters( 'wpbadger_badge_post_type_name', 'badge' );
 	}
 
-	function register_post_type() {
+	function init() {
+        $this->set_post_type_name();
+        $this->set_post_capability_type();
+
 		$labels = array(
 			'name' => _x('Badges', 'post type general name'),
 			'singular_name' => _x('Badge', 'post type singular name'),
@@ -42,7 +58,7 @@ class WPBadger_Badge_Schema {
 				'slug'       => 'badges',
 				'with_front' => false,
 			),
-			'capability_type' => 'post',
+			'capability_type' => $this->get_post_capability_type(),
 			'has_archive' => true,
 			'hierarchical' => false,
 			'supports' => array( 'title', 'editor', 'thumbnail' )
@@ -51,7 +67,7 @@ class WPBadger_Badge_Schema {
 		register_post_type( $this->get_post_type_name(), $args );
 	}
 }
-new WPBadger_Badge_Schema();
+new WPBadger_Badge();
 
 add_action( 'load-post.php', 'wpbadger_badges_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'wpbadger_badges_meta_boxes_setup' );
