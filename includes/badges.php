@@ -1,10 +1,25 @@
 <?php
+/**
+ * Badge custom post type.
+ *
+ * @package wpbadger
+ */
 
-class WPBadger_Badge
+/**
+ * Implements all the filters and actions needed to make the badge
+ * custom post type work.
+ */
+class WPBadger_Badge_Schema
 {
-    private $post_type_name;
+    /** Capability type to use when registering the custom post type. */
     private $post_capability_type;
+    /** Name to use when registering the custom post type. */
+    private $post_type_name;
 
+    /**
+     * Constructs the WPBadger Badge Schema instance. It registers all the hooks
+     * needed to support the custom post type. This should only be called once.
+     */
     function __construct()
     {
 		add_action( 'init', array( $this, 'init' ) );
@@ -25,6 +40,8 @@ class WPBadger_Badge
         add_action('manage_badge_posts_custom_column', array( $this, 'manage_posts_custom_column' ), 10, 2);  
 	}
 
+    // Accessors and Mutators
+
     public function get_post_capability_type()
     {
         return $this->post_capability_type;
@@ -35,16 +52,65 @@ class WPBadger_Badge
 		return $this->post_type_name;
 	}
 
-    private function set_post_capability_type()
+    private function set_post_capability_type( $new_val = 'post' )
     {
-        $this->post_capability_type = apply_filters( 'wpbadger_badge_post_capability_type', 'post' );
+        $this->post_capability_type = apply_filters( 'wpbadger_badge_post_capability_type', $new_val );
     }
 
-    private function set_post_type_name()
+    private function set_post_type_name( $new_val = 'badge' )
     {
-		$this->post_type_name = apply_filters( 'wpbadger_badge_post_type_name', 'badge' );
+		$this->post_type_name = apply_filters( 'wpbadger_badge_post_type_name', $new_val );
 	}
 
+    // General Filters and Actions
+
+    /**
+     * Initialize the custom post type. This registers what we need to
+     * support the Badge type.
+     */
+    function init()
+    {
+        $this->set_post_type_name();
+        $this->set_post_capability_type();
+
+		$labels = array(
+			'name'              => _x( 'Badges', 'post type general name', 'wpbadger' ),
+			'singular_name'     => _x( 'Badge', 'post type singular name', 'wpbadger' ),
+			'add_new'           => _x( 'Add New', 'badge', 'wpbadger' ),
+			'add_new_item'      => __( 'Add New Badge', 'wpbadger' ),
+			'edit_item'         => __( 'Edit Badge', 'wpbadger' ),
+			'new_item'          => __( 'New Badge', 'wpbadger' ),
+			'all_items'         => __( 'All Badges', 'wpbadger' ),
+			'view_item'         => __( 'View Badge', 'wpbadger' ),
+			'search_items'      => __( 'Search Badges', 'wpbadger' ),
+			'not_found'         => __( 'No badges found', 'wpbadger' ),
+			'not_found_in_trash' => __( 'No badges found in Trash', 'wpbadger' ),
+			'parent_item_colon' => '',
+			'menu_name'         => __( 'Badges', 'wpbadger' )
+		);
+
+		$args = array(
+			'labels'            => $labels,
+			'public'            => true,
+			'query_var'         => true,
+			'rewrite' => array(
+				'slug'          => 'badges',
+				'with_front'    => false,
+			),
+			'capability_type'   => $this->get_post_capability_type(),
+			'has_archive'       => true,
+			'hierarchical'      => false,
+			'supports'          => array( 'title', 'editor', 'thumbnail' )
+		);
+
+		register_post_type( $this->get_post_type_name(), $args );
+	}
+    
+    // Loop Filters and Actions
+    
+    /**
+     * Adds the badge image to the content when we are in The Loop.
+     */
     function content_filter( $content )
     {
         if (get_post_type() == 'badge' && in_the_loop())
@@ -53,6 +119,9 @@ class WPBadger_Badge
             return $content;
     }
 
+    /**
+     * Adds the badge version to the title when we are in The Loop.
+     */
     function title_filter( $title )
     {
         if (get_post_type() == 'badge' && in_the_loop())
@@ -61,18 +130,12 @@ class WPBadger_Badge
             return $title;
     }
 
-    function manage_posts_columns( $defaults )
-    {  
-        $defaults[ 'badge_version' ] = 'Badge Version';
-        return $defaults;  
-    }  
+    // Admin Filters and Actions
 
-    function manage_posts_custom_column( $column_name, $post_id )
-    {  
-        if ($column_name == 'badge_version')
-            esc_html_e( get_post_meta( $post_id, 'wpbadger-badge-version', true ) );
-    }
-
+    /**
+     * Disable the rich text editor for badges. We use the badge 'content'
+     * as the description, and that doesn't support HTML.
+     */
     function disable_wysiwyg( $default )
     {
         global $post;
@@ -82,14 +145,9 @@ class WPBadger_Badge
         return $default;
     }
 
-    function meta_boxes_setup()
-    {
-        add_action( 'add_meta_boxes', array( $this, 'meta_boxes_add' ) );
-        add_action( 'add_meta_boxes', array( $this, 'image_meta_box' ), 0 );
-
-        add_action( 'save_post', array( $this, 'save_meta' ), 10, 2 );
-    }
-
+    /**
+     * Modify the Feature Image metabox to be called the Badge Image.
+     */
     function image_meta_box()
     {
         global $wp_meta_boxes;
@@ -105,7 +163,41 @@ class WPBadger_Badge
         );
     }
 
-    // Create metaboxes for post editor
+    /**
+     * Add the badge version column to the table listing badges.
+     */
+    function manage_posts_columns( $defaults )
+    {  
+        $defaults[ 'badge_version' ] = 'Badge Version';
+        return $defaults;  
+    }  
+
+    /**
+     * Echo data for the badge version when displaying the table.
+     */
+    function manage_posts_custom_column( $column_name, $post_id )
+    {  
+        if ($column_name == 'badge_version')
+            esc_html_e( get_post_meta( $post_id, 'wpbadger-badge-version', true ) );
+    }
+
+    /**
+     * Display the Badge Version metabox.
+     */
+    function meta_box_version( $object, $box )
+    {
+        wp_nonce_field( basename( __FILE__ ), 'wpbadger_badge_nonce' );
+
+        ?>
+        <p>
+            <input class="widefat" type="text" name="wpbadger-badge-version" id="wpbadger-badge-version" value="<?php esc_attr_e( get_post_meta( $object->ID, 'wpbadger-badge-version', true ) ); ?>" size="30" />
+        </p>
+        <?php
+    }
+
+    /**
+     * Add the meta boxes to the badge post editor page.
+     */
     function meta_boxes_add()
     {
         add_meta_box(
@@ -118,20 +210,25 @@ class WPBadger_Badge
         );
     }
 
-    // Display metaboxes
-    function meta_box_version( $object, $box )
+    /**
+     * Add the action hooks needed to support badge post editor metaboxes.
+     */
+    function meta_boxes_setup()
     {
-        wp_nonce_field( basename( __FILE__ ), 'wpbadger_badge_nonce' );
+        add_action( 'add_meta_boxes', array( $this, 'meta_boxes_add' ) );
+        add_action( 'add_meta_boxes', array( $this, 'image_meta_box' ), 0 );
 
-        ?>
-        <p>
-            <input class="widefat" type="text" name="wpbadger-badge-version" id="wpbadger-badge-version" value="<?php echo esc_attr( get_post_meta( $object->ID, 'wpbadger-badge-version', true ) ); ?>" size="30" />
-        </p>
-        <?php
+        add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
     }
 
-    function save_meta( $post_id, $post )
+    /**
+     * Save the meta information for a badge post.
+     */
+    function save_post( $post_id, $post )
     {
+        if ($post->post_type != $this->get_post_type_name())
+            return $post_id;
+
         if (empty( $_POST ) || !wp_verify_nonce( $_POST[ basename( __FILE__ ) ], 'wpbadger_badge_nonce' ))
             return $post_id;
 
@@ -156,46 +253,7 @@ class WPBadger_Badge
         elseif ('' == $new_meta_value && $meta_value)
             delete_post_meta( $post_id, $meta_key, $meta_value );		
     }
-
-
-    function init()
-    {
-        $this->set_post_type_name();
-        $this->set_post_capability_type();
-
-		$labels = array(
-			'name' => _x('Badges', 'post type general name'),
-			'singular_name' => _x('Badge', 'post type singular name'),
-			'add_new' => _x('Add New', 'badge'),
-			'add_new_item' => __('Add New Badge'),
-			'edit_item' => __('Edit Badge'),
-			'new_item' => __('New Badge'),
-			'all_items' => __('All Badges'),
-			'view_item' => __('View Badge'),
-			'search_items' => __('Search Badges'),
-			'not_found' =>  __('No badges found'),
-			'not_found_in_trash' => __('No badges found in Trash'),
-			'parent_item_colon' => '',
-			'menu_name' => 'Badges'
-		);
-
-		$args = array(
-			'labels' => $labels,
-			'public' => true,
-			'query_var' => true,
-			'rewrite'      => array(
-				'slug'       => 'badges',
-				'with_front' => false,
-			),
-			'capability_type' => $this->get_post_capability_type(),
-			'has_archive' => true,
-			'hierarchical' => false,
-			'supports' => array( 'title', 'editor', 'thumbnail' )
-		);
-
-		register_post_type( $this->get_post_type_name(), $args );
-	}
 }
 
-new WPBadger_Badge();
+new WPBadger_Badge_Schema();
 
