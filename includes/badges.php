@@ -142,8 +142,10 @@ class WPBadger_Badge_Schema
      */
     function admin_notices()
     {
-        global $post;
+        global $pagenow, $post;
 
+        if ($pagenow != 'post.php')
+            return;
         if (empty( $post ) || ($post->post_type != $this->get_post_type_name()))
             return;
         if ($post->post_status != 'publish')
@@ -229,7 +231,7 @@ class WPBadger_Badge_Schema
 
         ?>
         <div id="wpbadger-badge-descriptiondiv"><div id="wpbadger-badge-descriptionwrap">
-            <label style="visibility: hidden;" id="wpbadger-badge-description-prompt-text" for="wpbadger-badge-description"><?php _e( "Enter description here", "wpbadger" ) ?></label>
+            <label class="screen-reader-text" id="wpbadger-badge-description-prompt-text" for="wpbadger-badge-description"><?php _e( "Enter description here", "wpbadger" ) ?></label>
             <input type="text" class="widefat" name="wpbadger-badge-description" id="wpbadger-badge-description" value="<?php esc_attr_e( get_post_meta( $post->ID, 'wpbadger-badge-description', true ) ) ?>" />
         </div></div>
         <?php

@@ -28,6 +28,11 @@
     border-bottom-width: 0;
 }
 
+#wpbadger-badge-descriptiondiv {
+    position: relative;
+    margin-bottom: 10px;
+}
+
 #wpbadger-badge-descriptiondiv #wpbadger-badge-description {
     padding: 3px 8px;
     font-size: 1.7em;
