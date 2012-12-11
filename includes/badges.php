@@ -232,36 +232,6 @@ class WPBadger_Badge_Schema
             <label style="visibility: hidden;" id="wpbadger-badge-description-prompt-text" for="wpbadger-badge-description"><?php _e( "Enter description here", "wpbadger" ) ?></label>
             <input type="text" class="widefat" name="wpbadger-badge-description" id="wpbadger-badge-description" value="<?php esc_attr_e( get_post_meta( $post->ID, 'wpbadger-badge-description', true ) ) ?>" />
         </div></div>
-        <script type="text/javascript">
-            jQuery(function ($) {
-                $('#postdivrich').before( $('#wpbadger-badge-descriptiondiv') );
-                var wptitlehint = function(id) {
-                    id = id || 'title';
-
-                    var title = $('#' + id), titleprompt = $('#' + id + '-prompt-text');
-
-                    if ( title.val() == '' )
-                        titleprompt.css('visibility', '');
-
-                    titleprompt.click(function(){
-                        $(this).css('visibility', 'hidden');
-                        title.focus();
-                    });
-
-                    title.blur(function(){
-                        if ( this.value == '' )
-                            titleprompt.css('visibility', '');
-                    }).focus(function(){
-                        titleprompt.css('visibility', 'hidden');
-                    }).keydown(function(e){
-                        titleprompt.css('visibility', 'hidden');
-                        $(this).unbind(e);
-                    });
-                };
-                
-              wptitlehint('wpbadger-badge-description');
-            });
-        </script>
         <?php
     }
 

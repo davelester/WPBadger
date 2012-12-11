@@ -51,11 +51,13 @@ function wpbadger_deactivate()
 function wpbadger_admin_init()
 {
     wp_register_style('wpbadger-admin-styles', plugins_url('css/admin-styles.css', __FILE__));
+    wp_register_script('wpbadger-admin-scripts', plugins_url('js/admin-scripts.js', __FILE__), array( 'post' ));
 }
 
 function wpbadger_admin_head()
 {
     wp_enqueue_style('wpbadger-admin-styles');
+    wp_enqueue_script('wpbadger-admin-scripts');
 }
 
 function wpbadger_admin_menu()
