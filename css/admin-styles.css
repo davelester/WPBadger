@@ -28,3 +28,23 @@
     border-bottom-width: 0;
 }
 
+#wpbadger-badge-descriptiondiv #wpbadger-badge-description {
+    padding: 3px 8px;
+    font-size: 1.7em;
+    line-height: 100%;
+    width: 100%;
+    outline: 0;
+    border-color: #CCC;
+    background-color: white;
+}
+
+#wpbadger-badge-descriptiondiv label {
+    cursor: text;
+}
+
+#wpbadger-badge-descriptiondiv #wpbadger-badge-description-prompt-text {
+    color: #BBB;
+    position: absolute;
+    font-size: 1.7em;
+    padding: 8px 10px;
+}

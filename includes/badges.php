@@ -27,8 +27,6 @@ class WPBadger_Badge_Schema
         add_action( 'load-post.php', array( $this, 'meta_boxes_setup' ) );
         add_action( 'load-post-new.php', array( $this, 'meta_boxes_setup' ) );
 
-        add_filter( 'user_can_richedit', array( $this, 'disable_wysiwyg' ) );
-
         /* Filter the content of the badge post type in the display, so badge metadata
            including badge image are displayed on the page. */
         add_filter( 'the_content', array( $this, 'content_filter' ) );
@@ -157,6 +155,8 @@ class WPBadger_Badge_Schema
             echo '<div class="error"><p>'.__("You must set a badge image that is a PNG file.", 'wpbadger').'</p></div>';
         if (!$valid[ 'description' ])
             echo '<div class="error"><p>'.__("You must enter a badge description.", 'wpbadger').'</p></div>';
+        if (!$valid[ 'criteria' ])
+            echo '<div class="error"><p>'.__("You must enter the badge criteria.", 'wpbadger').'</p></div>';
     }
 
     /**
@@ -196,10 +196,14 @@ class WPBadger_Badge_Schema
             }
         }
 
-        # Check that the description is not empty. We don't support
-        # criteria at the moment, so set it the same as description.
+        # Check that the description is not empty.
+        $desc = get_post_meta( $post_id, 'wpbadger-badge-description', true );
+        if (!empty( $desc ))
+            $rv[ 'description' ] = true;
+        
+        # Check that the criteria is not empty.
         if (!empty( $post->post_content ))
-            $rv[ 'description' ] = $rv[ 'criteria' ] = true;
+            $rv[ 'criteria' ] = true;
 
         if ($post->post_status == 'publish')
             $rv[ 'status' ] = true;
@@ -210,16 +214,55 @@ class WPBadger_Badge_Schema
     }
 
     /**
-     * Disable the rich text editor for badges. We use the badge 'content'
-     * as the description, and that doesn't support HTML.
+     * Add a simple description metabox. We can't place this where we want
+     * directly in the page, so just dump it wherever and use JS to reposition it.
+     *
+     * Also, since we're going to re-enable the media buttons, add the label for the criteria
+     * box.
      */
-    function disable_wysiwyg( $default )
+    function description_meta_box()
     {
         global $post;
 
-        if ('badge' == get_post_type( $post ))
-            return false;
-        return $default;
+        if ($post->post_type != $this->get_post_type_name())
+            return;
+
+        ?>
+        <div id="wpbadger-badge-descriptiondiv"><div id="wpbadger-badge-descriptionwrap">
+            <label style="visibility: hidden;" id="wpbadger-badge-description-prompt-text" for="wpbadger-badge-description"><?php _e( "Enter description here", "wpbadger" ) ?></label>
+            <input type="text" class="widefat" name="wpbadger-badge-description" id="wpbadger-badge-description" value="<?php esc_attr_e( get_post_meta( $post->ID, 'wpbadger-badge-description', true ) ) ?>" />
+        </div></div>
+        <script type="text/javascript">
+            jQuery(function ($) {
+                $('#postdivrich').before( $('#wpbadger-badge-descriptiondiv') );
+                var wptitlehint = function(id) {
+                    id = id || 'title';
+
+                    var title = $('#' + id), titleprompt = $('#' + id + '-prompt-text');
+
+                    if ( title.val() == '' )
+                        titleprompt.css('visibility', '');
+
+                    titleprompt.click(function(){
+                        $(this).css('visibility', 'hidden');
+                        title.focus();
+                    });
+
+                    title.blur(function(){
+                        if ( this.value == '' )
+                            titleprompt.css('visibility', '');
+                    }).focus(function(){
+                        titleprompt.css('visibility', 'hidden');
+                    }).keydown(function(e){
+                        titleprompt.css('visibility', 'hidden');
+                        $(this).unbind(e);
+                    });
+                };
+                
+              wptitlehint('wpbadger-badge-description');
+            });
+        </script>
+        <?php
     }
 
     /**
@@ -240,6 +283,25 @@ class WPBadger_Badge_Schema
         }
 
         return $post_states;
+    }
+
+    /**
+     * Get the badge description metadata. For legacy reasons, this will
+     * try to use the post_content if the description metadata isn't present.
+     */
+    function get_post_description( $post_id, $post = null )
+    {
+        if (is_null( $post ))
+            $post = get_post( $post_id );
+
+        $desc = get_post_meta( $post_id, 'wpbadger-badge-description', true );
+        if (empty( $desc ))
+        {
+            $desc = strip_tags( $post->post_content );
+            $desc = str_replace( array( "\r", "\n" ), '', $desc );
+        }
+
+        return $desc;
     }
 
     /**
@@ -314,6 +376,7 @@ class WPBadger_Badge_Schema
     {
         add_action( 'add_meta_boxes', array( $this, 'meta_boxes_add' ) );
         add_action( 'add_meta_boxes', array( $this, 'image_meta_box' ), 0 );
+        add_action( 'edit_form_advanced', array( $this, 'description_meta_box' ) );
 
         add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
     }
@@ -336,7 +399,7 @@ class WPBadger_Badge_Schema
         if ($post->post_type != $this->get_post_type_name())
             return $post_id;
 
-        if (empty( $_POST ) || !wp_verify_nonce( $_POST[ basename( __FILE__ ) ], 'wpbadger_badge_nonce' ))
+        if (empty( $_POST ) || !wp_verify_nonce( $_POST[ 'wpbadger_badge_nonce' ], basename( __FILE__ ) ))
             return $post_id;
 
         $post_type = get_post_type_object( $post->post_type );
@@ -359,6 +422,14 @@ class WPBadger_Badge_Schema
             update_post_meta( $post_id, $meta_key, $new_meta_value );
         elseif ('' == $new_meta_value && $meta_value)
             delete_post_meta( $post_id, $meta_key, $meta_value );		
+
+        $meta_key = 'wpbadger-badge-description';
+        $meta_value = strip_tags( $_POST[ $meta_key ] );
+
+        if (empty( $meta_value ))
+            delete_post_meta( $post_id, $meta_key );
+        else
+            update_post_meta( $post_id, $meta_key, $meta_value );
     }
 }
 

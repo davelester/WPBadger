@@ -5,6 +5,7 @@ $chosen_badge_id = get_post_meta($post->ID, 'wpbadger-award-choose-badge', true)
 $salt = get_post_meta( $post->ID, 'wpbadger-award-salt', true );
 $title = get_the_title($chosen_badge_id);
 $version = get_post_meta( $chosen_badge_id, 'wpbadger-badge-version', true );
+$desc = $wpbadger_badge_schema->get_post_description( $chosen_badge_id );
 $issued_on = get_the_date('Y-m-d');
 $evidence = get_permalink();
 
@@ -35,7 +36,7 @@ $badge_query->the_post();
     "version": "<?php echo esc_js( $version ); ?>",
     "name": "<?php echo esc_js( get_the_title() ); ?>",
     "image": "<?php $post_thumbnail_id = get_post_thumbnail_id(); echo esc_js( wp_get_attachment_url( $post_thumbnail_id ) ); ?>",
-    "description": "<?php echo esc_js( get_the_content() ); ?>",
+    "description": "<?php echo esc_js( $desc ); ?>",
     "criteria": "<?php echo esc_js( get_permalink() ); ?>",
     "issuer": {
       "origin": "<?php $data = parse_url(get_bloginfo('siteurl')); echo esc_js( 'http://' . $data['host'] ); ?>",
