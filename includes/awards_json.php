@@ -28,20 +28,20 @@ $badge_query->the_post();
 ?>
 {
   "recipient": "sha256$<?php echo hash("sha256", ($email . $salt)); ?>",
-  "salt": "<?php echo $salt; ?>",
-  "evidence": "<?php echo $evidence; ?>",
-  "issued_on": "<?php echo $issued_on; ?>",
+  "salt": "<?php echo esc_js( $salt ); ?>",
+  "evidence": "<?php echo esc_js( $evidence ); ?>",
+  "issued_on": "<?php echo esc_js( $issued_on ); ?>",
   "badge": {
-    "version": "<?php echo $version; ?>",
-    "name": "<?php echo get_the_title(); ?>",
-    "image": "<?php $post_thumbnail_id = get_post_thumbnail_id(); echo wp_get_attachment_url( $post_thumbnail_id ); ?>",
-    "description": "<?php echo get_the_content(); ?>",
-    "criteria": "<?php echo get_permalink(); ?>",
+    "version": "<?php echo esc_js( $version ); ?>",
+    "name": "<?php echo esc_js( get_the_title() ); ?>",
+    "image": "<?php $post_thumbnail_id = get_post_thumbnail_id(); echo esc_js( wp_get_attachment_url( $post_thumbnail_id ) ); ?>",
+    "description": "<?php echo esc_js( get_the_content() ); ?>",
+    "criteria": "<?php echo esc_js( get_permalink() ); ?>",
     "issuer": {
-      "origin": "<?php $data = parse_url(get_bloginfo('siteurl')); echo 'http://' . $data['host']; ?>",
-      "name": "<?php echo get_option('wpbadger_issuer_name'); ?>",
-      "org": "<?php echo get_option('wpbadger_issuer_org'); ?>",
-      "contact": "<?php echo get_option('wpbadger_issuer_contact'); ?>"
+      "origin": "<?php $data = parse_url(get_bloginfo('siteurl')); echo esc_js( 'http://' . $data['host'] ); ?>",
+      "name": "<?php echo esc_js( get_option('wpbadger_issuer_name') ); ?>",
+      "org": "<?php echo esc_js( get_option('wpbadger_issuer_org') ); ?>",
+      "contact": "<?php echo esc_js( get_option('wpbadger_issuer_contact') ); ?>"
     }
   }
 }
