@@ -36,6 +36,9 @@ class WPBadger_Badge_Schema
         /* Filter the title of a badge post type in its display to include version */
         add_filter( 'the_title', array( $this, 'title_filter' ), 10, 3 );
 
+        add_filter( 'display_post_states', array( $this, 'display_post_states' ) );
+        add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+
         add_filter('manage_badge_posts_columns', array( $this, 'manage_posts_columns' ), 10);  
         add_action('manage_badge_posts_custom_column', array( $this, 'manage_posts_custom_column' ), 10, 2);  
 	}
@@ -104,6 +107,10 @@ class WPBadger_Badge_Schema
 		);
 
 		register_post_type( $this->get_post_type_name(), $args );
+
+        # Actions and filters that depend on the post_type name, so can't run
+        # until here
+        add_action( 'publish_' . $this->get_post_type_name(), array( $this, 'publish_post_validate' ), 10, 2 );
 	}
     
     // Loop Filters and Actions
@@ -133,6 +140,76 @@ class WPBadger_Badge_Schema
     // Admin Filters and Actions
 
     /**
+     * Display admin notices about invalid posts.
+     */
+    function admin_notices()
+    {
+        global $post;
+
+        if (empty( $post ) || ($post->post_type != $this->get_post_type_name()))
+            return;
+        if ($post->post_status != 'publish')
+            return;
+
+        $valid = $this->check_valid( $post->ID, $post );
+
+        if (!$valid[ 'image' ])
+            echo '<div class="error"><p>'.__("You must set a badge image that is a PNG file.", 'wpbadger').'</p></div>';
+        if (!$valid[ 'description' ])
+            echo '<div class="error"><p>'.__("You must enter a badge description.", 'wpbadger').'</p></div>';
+    }
+
+    /**
+     * Checks that a badge post is valid. Returns an array with the parts checked, and
+     * an overall results. Array keys:
+     *
+     * - image
+     * - description
+     * - criteria
+     * - status
+     * - all
+     *
+     * @return array
+     */
+    function check_valid( $post_id, $post = null )
+    {
+        if (is_null( $post ))
+            $post = get_post( $post_id );
+
+        $rv = array(
+            'image'         => false,
+            'description'   => false,
+            'criteria'      => false,
+            'status'        => false
+        );
+
+        # Check for post image, and that it is a PNG
+        $image_id = get_post_thumbnail_id( $post_id );
+        if ($image_id > 0)
+        {
+            $image_file = get_attached_file( $image_id );
+            if (!empty( $image_file ))
+            {
+                $image_ext = pathinfo( $image_file, PATHINFO_EXTENSION );
+                if (strtolower( $image_ext ) == 'png')
+                    $rv[ 'image' ] = true;
+            }
+        }
+
+        # Check that the description is not empty. We don't support
+        # criteria at the moment, so set it the same as description.
+        if (!empty( $post->post_content ))
+            $rv[ 'description' ] = $rv[ 'criteria' ] = true;
+
+        if ($post->post_status == 'publish')
+            $rv[ 'status' ] = true;
+
+        $rv[ 'all' ] = $rv[ 'image' ] && $rv[ 'description' ] && $rv[ 'criteria' ] && $rv[ 'status' ];
+
+        return $rv;
+    }
+
+    /**
      * Disable the rich text editor for badges. We use the badge 'content'
      * as the description, and that doesn't support HTML.
      */
@@ -143,6 +220,26 @@ class WPBadger_Badge_Schema
         if ('badge' == get_post_type( $post ))
             return false;
         return $default;
+    }
+
+    /**
+     * If the badge is invalid, add it to the list of post states.
+     */
+    function display_post_states( $post_states )
+    {
+        global $post;
+
+        if ($post->post_type != $this->get_post_type_name())
+            return $post_states;
+
+        if ($post->post_status == 'publish')
+        {
+            $valid = get_post_meta( $post->ID, 'wpbadger-badge-valid', true );
+            if (!$valid)
+                $post_states[ 'wpbadger-badge-state' ] = '<span class="wpbadger-badge-state-invalid">'.__( "Invalid", 'wpbadger' ).'</span>';
+        }
+
+        return $post_states;
     }
 
     /**
@@ -222,6 +319,16 @@ class WPBadger_Badge_Schema
     }
 
     /**
+     * Validate the post metadata and mark it as valid or not.
+     */
+    function publish_post_validate( $post_id, $post )
+    {
+        $valid = $this->check_valid( $post_id, $post );
+
+        update_post_meta( $post_id, 'wpbadger-badge-valid', $valid[ 'all' ] );
+    }
+
+    /**
      * Save the meta information for a badge post.
      */
     function save_post( $post_id, $post )
@@ -255,5 +362,5 @@ class WPBadger_Badge_Schema
     }
 }
 
-new WPBadger_Badge_Schema();
+$GLOBALS[ 'wpbadger_badge_schema' ] = new WPBadger_Badge_Schema();
 

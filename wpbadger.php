@@ -137,7 +137,16 @@ wpbadger_admin_header('Manage Awarded Badges');
 				<select name="wpbadger_award_choose_badge" id="wpbadger_award_choose_badge">
 
 				<?php 	
-				$query = new WP_Query( array( 'post_type' => 'badge' ) );
+                $query = new WP_Query( array(
+                    'post_type'     => 'badge',
+                    'post_status'   => 'publish',
+                    'meta_query' => array(
+                        array(
+                            'key'   => 'wpbadger-badge-valid',
+                            'value' => true
+                        )
+                    )
+                ) );
 
 				while ( $query->have_posts() ) : $query->the_post();
 					$title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";

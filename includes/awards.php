@@ -187,6 +187,8 @@ function wpbadger_awards_posts_search( $search, &$query ) {
 }
 
 function wpbadger_award_information_meta_box( $object, $box ) {
+    global $wpbadger_badge_schema;
+
 	wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' );
 
     $is_published = ('publish' == $object->post_status || 'private' == $object->post_status);
@@ -213,7 +215,14 @@ function wpbadger_award_information_meta_box( $object, $box ) {
             } else {
                 $selected = '';
             }
-            echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";
+            $valid = $wpbadger_badge_schema->check_valid( $query->post->ID, $query->post );
+            if ($valid[ 'all' ]) {
+                $disabled = '';
+            } else {
+                $disabled = ' disabled="disabled"';
+            }
+
+            echo "<option value='" . get_the_ID() . "'". $selected . $disabled . ">";
             echo $badge_title_version . "</option>";
         endwhile;
         wp_reset_postdata();
