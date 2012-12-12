@@ -108,7 +108,6 @@ class WPBadger_Badge_Schema
 
         # Actions and filters that depend on the post_type name, so can't run
         # until here
-        add_action( 'publish_' . $this->get_post_type_name(), array( $this, 'publish_post_validate' ), 10, 2 );
 	}
     
     // Loop Filters and Actions
@@ -230,7 +229,7 @@ class WPBadger_Badge_Schema
         ?>
         <div id="wpbadger-badge-descriptiondiv"><div id="wpbadger-badge-descriptionwrap">
             <label class="screen-reader-text" id="wpbadger-badge-description-prompt-text" for="wpbadger-badge-description"><?php _e( "Enter description here", "wpbadger" ) ?></label>
-            <input type="text" class="widefat" name="wpbadger-badge-description" id="wpbadger-badge-description" value="<?php esc_attr_e( get_post_meta( $post->ID, 'wpbadger-badge-description', true ) ) ?>" />
+            <input type="text" class="widefat" name="wpbadger-badge-description" id="wpbadger-badge-description" value="<?php esc_attr_e( get_post_meta( get_the_ID(), 'wpbadger-badge-description', true ) ) ?>" />
         </div></div>
         <?php
     }
@@ -347,16 +346,7 @@ class WPBadger_Badge_Schema
         add_action( 'edit_form_advanced', array( $this, 'description_meta_box' ) );
 
         add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
-    }
-
-    /**
-     * Validate the post metadata and mark it as valid or not.
-     */
-    function publish_post_validate( $post_id, $post )
-    {
-        $valid = $this->check_valid( $post_id, $post );
-
-        update_post_meta( $post_id, 'wpbadger-badge-valid', $valid[ 'all' ] );
+        add_action( 'save_post', array( $this, 'save_post_validate' ), 99, 2 );
     }
 
     /**
@@ -398,6 +388,16 @@ class WPBadger_Badge_Schema
             delete_post_meta( $post_id, $meta_key );
         else
             update_post_meta( $post_id, $meta_key, $meta_value );
+    }
+
+    /**
+     * Validate the post metadata and mark it as valid or not.
+     */
+    function save_post_validate( $post_id, $post )
+    {
+        $valid = $this->check_valid( $post_id, $post );
+
+        update_post_meta( $post_id, 'wpbadger-badge-valid', $valid[ 'all' ] );
     }
 }
 
