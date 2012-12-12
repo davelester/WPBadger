@@ -117,7 +117,7 @@ class WPBadger_Badge_Schema
      */
     function content_filter( $content )
     {
-        if (get_post_type() == 'badge' && in_the_loop())
+        if (get_post_type() == $this->get_post_type_name() && in_the_loop())
             return '<p>' . get_the_post_thumbnail( get_the_ID(), 'thumbnail', array( 'class' => 'alignright' ) ) . $content . '</p>';
         else
             return $content;
@@ -128,7 +128,7 @@ class WPBadger_Badge_Schema
      */
     function title_filter( $title )
     {
-        if (get_post_type() == 'badge' && in_the_loop())
+        if (get_post_type() == $this->get_post_type_name() && in_the_loop())
             return $title . ' (Version ' . get_post_meta( get_the_ID(), 'wpbadger-badge-version', true ) . ')';
         else
             return $title;
@@ -283,7 +283,7 @@ class WPBadger_Badge_Schema
             'postimagediv',
             esc_html__( 'Badge Image', 'wpbadger' ),
             'post_thumbnail_meta_box',
-            'badge',
+            $this->get_post_type_name(),
             'side',
             'low'
         );
@@ -330,7 +330,7 @@ class WPBadger_Badge_Schema
             'wpbadger-badge-version',		// Unique ID
             esc_html__( 'Badge Version', 'wpbadger' ),	// Title
             array( $this, 'meta_box_version' ),		// Callback function
-            'badge',						// Admin page (or post type)
+            $this->get_post_type_name(),						// Admin page (or post type)
             'side',							// Context
             'default'						// Priority
         );
