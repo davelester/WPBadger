@@ -37,8 +37,8 @@ class WPBadger_Badge_Schema
         add_filter( 'display_post_states', array( $this, 'display_post_states' ) );
         add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 
-        add_filter('manage_badge_posts_columns', array( $this, 'manage_posts_columns' ), 10);  
-        add_action('manage_badge_posts_custom_column', array( $this, 'manage_posts_custom_column' ), 10, 2);  
+        add_filter( 'manage_badge_posts_columns', array( $this, 'manage_posts_columns' ), 10 );
+        add_action( 'manage_badge_posts_custom_column', array( $this, 'manage_posts_custom_column' ), 10, 2 );
 	}
 
     // Accessors and Mutators
