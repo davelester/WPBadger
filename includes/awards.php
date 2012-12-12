@@ -38,8 +38,6 @@ class WPbadger_Award_Schema {
 
         add_action( 'wp_insert_post', array( $this, 'send_email' ) );
         
-        add_filter( 'user_can_richedit', array( $this, 'disable_wysiwyg' ) );
-        
         // Runs before saving a new post, and filters the post data
         add_filter( 'wp_insert_post_data', array( $this, 'save_title' ), '99', 2 );
         
@@ -95,32 +93,64 @@ class WPbadger_Award_Schema {
 
         $post_id = get_the_ID();
         $award_status = get_post_meta( $post_id, 'wpbadger-award-status', true );
+        $admin_email_attr = esc_attr( get_settings( 'admin_email' ) );
+        $admin_email_html = esc_html( get_settings( 'admin_email' ) );
 
         if ($accept)
         {
             if ($award_status != 'Awarded')
-                return "<p>This award has already been claimed.</p><p>If you believe this was done in error, please contact the site administrator, <a href='mailto:" . esc_attr( get_settings( 'admin_email' ) ) . "'>" . esc_html( get_settings( 'admin_email' ) ) . "</p>";
+            {
+                $content = <<<EOHTML
+                    <div class="wpbadger-award-error">
+                        <p>This award has already been claimed.</p>
+                        <p>If you believe this was done in error, please contact the 
+                            <a href="mailto:{$admin_email_attr}">site administrator</a>.</p>
+                    </div>
+EOHTML;
+            }
+            else
+            {
+                update_post_meta( $post_id, 'wpbadger-award-status', 'Accepted' );
 
-            update_post_meta( $post_id, 'wpbadger-award-status', 'Accepted' );
+                // If WP Super Cache Plugin installed, delete cache files for award post
+                if (function_exists( 'wp_cache_post_change' ))
+                    wp_cache_post_change( $post_id );
 
-            // If WP Super Cache Plugin installed, delete cache files for award post
-            if (function_exists( 'wp_cache_post_change' ))
-                wp_cache_post_change( $post_id );
-
-            return "<p>Your award has been successfully accepted and added to your backpack.</p>";
+                $content = <<<EOHTML
+                    <div class="wpbadger-award-updated">
+                        <p>You have successfully accepted to add your award to your backpack.</p>
+                    </div>
+                    {$content}
+EOHTML;
+            }
         }
         elseif ($reject)
         {
             if ($award_status != 'Awarded')
-                return "<p>This award has already been claimed.</p><p>If you believe this was done in error, please contact the site administrator, <a href='mailto:" . esc_attr( get_settings( 'admin_email' ) ) . "'>" . esc_html( get_settings( 'admin_email' ) ) . "</p>";
+            {
+                $content = <<<EOHTML
+                    <div class="wpbadger-award-error">
+                        <p>This award has already been claimed.</p>
+                        <p>If you believe this was done in error, please contact the 
+                            <a href="mailto:{$admin_email_attr}">site administrator</a>.</p>
+                    </div>
+EOHTML;
+            }
+            else
+            {
+                update_post_meta( $post_id, 'wpbadger-award-status', 'Rejected' );
 
-            update_post_meta( $post_id, 'wpbadger-award-status', 'Rejected' );
+                // If WP Super Cache Plugin installed, delete cache files for award post
+                if (function_exists( 'wp_cache_post_change' ))
+                    wp_cache_post_change( $post_id );
 
-            // If WP Super Cache Plugin installed, delete cache files for award post
-            if (function_exists( 'wp_cache_post_change' ))
-                wp_cache_post_change( $post_id );
-
-            return "<p>You have successfully declined your badge.</p>";
+                $content = <<<EOHTML
+                    <div class="wpbadger-badge-updated">
+                        <p>You have successfully declined to add your award to your backpack.</p>
+                    </div>
+                    {$content}
+EOHTML;
+            }
         }
         elseif ($award_status == 'Awarded')
         {
@@ -130,7 +160,10 @@ class WPbadger_Award_Schema {
             else
                 $url = get_permalink() . '?';
 
-            return "<script type='text/javascript'>
+            $badge_title = esc_html( get_the_title( get_post_meta( $post_id, 'wpbadger-award-choose-badge', true ) ) );
+
+            $content = <<<EOHTML
+                <script type='text/javascript'>
                 jQuery(function ($) {
                     // Some js originally based on Badge it Gadget Lite https://github.com/Codery/badge-it-gadget-lite/blob/master/digital-badges/get-my-badge.php
 
@@ -174,20 +207,19 @@ class WPbadger_Award_Schema {
                 });
                 </script>
 
-                <p>Congratulations! The " . get_the_title( get_post_meta( $post->ID, 'wpbadger-award-choose-badge', true ) ) . " badge has been awarded.</p><p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the badge.</p>";
+                <div class="wpbadger-award-notice">
+                    <p>Congratulations! The "{$badge_title}" badge has been awarded.</p>
+                    <p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the award.</p>
+                </div>
+                {$content}
+EOHTML;
         }
         elseif ($award_status == 'Rejected')
         {
-            return "<p>This badge has been successfully declined.</p>";
+            $content = "<div class='wpbadger-award-notice'><p>This award has been declined.</p></div>";
         }
-        elseif ($award_status == 'Accepted')
-        {
-            return "<p>This badge was awarded for the following reason:</p><p><em>\"{$content}\"</em></p>";
-        }
-        else
-        {
-            return $content;
-        }
+
+        return $content;
     }
 
 	/**
@@ -393,14 +425,6 @@ class WPbadger_Award_Schema {
             $slug = rand( 100000000000000, 999999999999999 );
 
         return $slug;
-    }
-
-    function disable_wysiwyg( $default )
-    {
-        if (get_post_type() == $this->get_post_type_name())
-            return false;
-
-        return $default;
     }
 
     function manage_posts_columns( $defaults )

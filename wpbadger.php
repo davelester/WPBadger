@@ -18,6 +18,8 @@ add_action('openbadges_shortcode', 'wpbadger_shortcode');
 register_activation_hook(__FILE__,'wpbadger_activate');
 register_deactivation_hook(__FILE__,'wpbadger_deactivate');
 
+add_action('wp_enqueue_scripts', 'wpbadger_enqueue_scripts');
+
 require_once( dirname(__FILE__) . '/includes/badges.php' );
 require_once( dirname(__FILE__) . '/includes/badges_stats.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
@@ -66,6 +68,11 @@ function wpbadger_admin_head()
 
     if ($pagenow == 'post.php' || $pagenow == 'post-new.php')
         wp_enqueue_script( 'wpbadger-admin-post' );
+}
+
+function wpbadger_enqueue_scripts()
+{
+    wp_enqueue_style( 'wpbadger-styles', plugins_url('css/styles.css', __FILE__) );
 }
 
 function wpbadger_admin_menu()
@@ -368,12 +375,3 @@ function wpbadger_disable_quickedit( $actions, $post ) {
 }
 add_filter( 'post_row_actions', 'wpbadger_disable_quickedit', 10, 2 );
 
-function wpbadger_disable_media_buttons($context) {
-	if( get_post_type() == 'award' ) {
-		return "<strong>Description of Awarded Badge:</strong>";
-	}
-	
-	return $context;
-}
-
-add_action( 'media_buttons_context' , 'wpbadger_disable_media_buttons' );
