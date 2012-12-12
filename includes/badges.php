@@ -224,9 +224,7 @@ class WPBadger_Badge_Schema
      */
     function description_meta_box()
     {
-        global $post;
-
-        if ($post->post_type != $this->get_post_type_name())
+        if (get_post_type() != $this->get_post_type_name())
             return;
 
         ?>
@@ -242,14 +240,12 @@ class WPBadger_Badge_Schema
      */
     function display_post_states( $post_states )
     {
-        global $post;
-
-        if ($post->post_type != $this->get_post_type_name())
+        if (get_post_type() != $this->get_post_type_name())
             return $post_states;
 
-        if ($post->post_status == 'publish')
+        if (get_post_status() == 'publish')
         {
-            $valid = get_post_meta( $post->ID, 'wpbadger-badge-valid', true );
+            $valid = get_post_meta( get_the_ID(), 'wpbadger-badge-valid', true );
             if (!$valid)
                 $post_states[ 'wpbadger-badge-state' ] = '<span class="wpbadger-badge-state-invalid">'.__( "Invalid", 'wpbadger' ).'</span>';
         }
