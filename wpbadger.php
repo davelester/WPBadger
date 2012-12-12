@@ -50,14 +50,22 @@ function wpbadger_deactivate()
 
 function wpbadger_admin_init()
 {
-    wp_register_style('wpbadger-admin-styles', plugins_url('css/admin-styles.css', __FILE__));
-    wp_register_script('wpbadger-admin-scripts', plugins_url('js/admin-scripts.js', __FILE__), array( 'post' ));
+    wp_register_style( 'wpbadger-admin-styles', plugins_url('css/admin-styles.css', __FILE__) );
+    wp_register_script( 'wpbadger-admin-post', plugins_url('js/admin-post.js', __FILE__), array( 'post' ) );
 }
 
 function wpbadger_admin_head()
 {
-    wp_enqueue_style('wpbadger-admin-styles');
-    wp_enqueue_script('wpbadger-admin-scripts');
+    global $pagenow, $wpbadger_badge_schema, $wpbadger_award_schema;
+
+    if (get_post_type() != $wpbadger_badge_schema->get_post_type_name() &&
+        get_post_type() != $wpbadger_award_schema->get_post_type_name())
+        return;
+
+    wp_enqueue_style( 'wpbadger-admin-styles' );
+
+    if ($pagenow == 'post.php' || $pagenow == 'post-new.php')
+        wp_enqueue_script( 'wpbadger-admin-post' );
 }
 
 function wpbadger_admin_menu()
