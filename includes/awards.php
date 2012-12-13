@@ -46,6 +46,7 @@ class WPbadger_Award_Schema {
         
         add_filter( 'the_content', array( $this, 'content_filter' ) );
 
+        add_action( 'save_post', array( $this, 'save_post_validate' ), 99, 2 );
         add_filter( 'display_post_states', array( $this, 'display_post_states' ) );
         add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 	}
@@ -649,7 +650,6 @@ EOHTML;
         add_action( 'add_meta_boxes', array( $this, 'meta_boxes_add' ) );
 
         add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
-        add_action( 'save_post', array( $this, 'save_post_validate' ), 99, 2 );
     }
 
     function save_post( $post_id, $post )

@@ -34,6 +34,7 @@ class WPBadger_Badge_Schema
         /* Filter the title of a badge post type in its display to include version */
         add_filter( 'the_title', array( $this, 'title_filter' ), 10, 3 );
 
+        add_action( 'save_post', array( $this, 'save_post_validate' ), 99, 2 );
         add_filter( 'display_post_states', array( $this, 'display_post_states' ) );
         add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 
@@ -354,7 +355,6 @@ class WPBadger_Badge_Schema
         add_action( 'edit_form_advanced', array( $this, 'description_meta_box' ) );
 
         add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
-        add_action( 'save_post', array( $this, 'save_post_validate' ), 99, 2 );
     }
 
     /**
