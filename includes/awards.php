@@ -35,6 +35,7 @@ class WPbadger_Award_Schema {
         add_filter( 'template_include', array( $this, 'template_include' ) );
 
         add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
+        add_action( 'wp_ajax_nopriv_wpbadger_award_ajax', array( $this, 'ajax' ) );
 
         add_action( 'wp_insert_post', array( $this, 'send_email' ) );
         
@@ -85,82 +86,83 @@ class WPbadger_Award_Schema {
 		add_rewrite_tag( '%%accept%%', '([1]{1,})' );
 		add_rewrite_tag( '%%json%%', '([1]{1,})' );
 		add_rewrite_tag( '%%reject%%', '([1]{1,})' );
-	}
+    }
+
+    function ajax()
+    {
+        $award_id = intval( $_POST[ 'award_id' ] );
+        $award = get_post( $award_id );
+        if (is_null( $award ) || $award->post_type != $this->get_post_type_name())
+            die();
+
+        $admin_email = get_settings( 'admin_email' );
+
+        header( 'Content-Type: text/html' );
+
+        # Only actions are valid on awards that haven't been accepted or
+        # rejected yet
+        $award_status = get_post_meta( $award_id, 'wpbadger-award-status', true );
+        if ($award_status != 'Awarded')
+        {
+            ?>
+            <div class="wpbadger-award-error">
+                <p>This award has already been claimed.</p>
+                <p>If you believe this was done in error, please contact the 
+                <a href="mailto:<?php esc_attr_e( $admin_email ) ?>">site administrator</a>.</p>
+            </div>
+            <?php
+            die();
+        }
+
+        switch ($_POST[ 'award_action' ])
+        {
+        case 'accept':
+            update_post_meta( $award_id, 'wpbadger-award-status', 'Accepted' );
+
+            // If WP Super Cache Plugin installed, delete cache files for award post
+            if (function_exists( 'wp_cache_post_change' ))
+                wp_cache_post_change( $award_id );
+
+            ?>
+            <div class="wpbadger-award-updated">
+                <p>You have successfully accepted to add your award to your backpack.</p>
+            </div>
+            <?php
+            break;
+
+        case 'reject':
+            update_post_meta( $award_id, 'wpbadger-award-status', 'Rejected' );
+
+            // If WP Super Cache Plugin installed, delete cache files for award post
+            if (function_exists( 'wp_cache_post_change' ))
+                wp_cache_post_change( $award_id );
+
+            ?>
+            <div class="wpbadger-award-updated">
+                <p>You have successfully declined to add your award to your backpack.</p>
+            </div>
+            <?php
+            break;
+        }
+
+        die();
+    }
 
     function content_filter( $content )
     {
         if (get_post_type() != $this->get_post_type_name())
             return $content;
 
-        $accept = get_query_var( 'accept' );
-        $reject = get_query_var( 'reject' );
-
         $post_id = get_the_ID();
+
         $award_status = get_post_meta( $post_id, 'wpbadger-award-status', true );
-        $admin_email_attr = esc_attr( get_settings( 'admin_email' ) );
-        $admin_email_html = esc_html( get_settings( 'admin_email' ) );
 
-        if ($accept)
-        {
-            if ($award_status != 'Awarded')
-            {
-                $content = <<<EOHTML
-                    <div class="wpbadger-award-error">
-                        <p>This award has already been claimed.</p>
-                        <p>If you believe this was done in error, please contact the 
-                            <a href="mailto:{$admin_email_attr}">site administrator</a>.</p>
-                    </div>
-EOHTML;
-            }
-            else
-            {
-                update_post_meta( $post_id, 'wpbadger-award-status', 'Accepted' );
-
-                // If WP Super Cache Plugin installed, delete cache files for award post
-                if (function_exists( 'wp_cache_post_change' ))
-                    wp_cache_post_change( $post_id );
-
-                $content = <<<EOHTML
-                    <div class="wpbadger-award-updated">
-                        <p>You have successfully accepted to add your award to your backpack.</p>
-                    </div>
-                    {$content}
-EOHTML;
-            }
-        }
-        elseif ($reject)
-        {
-            if ($award_status != 'Awarded')
-            {
-                $content = <<<EOHTML
-                    <div class="wpbadger-award-error">
-                        <p>This award has already been claimed.</p>
-                        <p>If you believe this was done in error, please contact the 
-                            <a href="mailto:{$admin_email_attr}">site administrator</a>.</p>
-                    </div>
-EOHTML;
-            }
-            else
-            {
-                update_post_meta( $post_id, 'wpbadger-award-status', 'Rejected' );
-
-                // If WP Super Cache Plugin installed, delete cache files for award post
-                if (function_exists( 'wp_cache_post_change' ))
-                    wp_cache_post_change( $post_id );
-
-                $content = <<<EOHTML
-                    <div class="wpbadger-badge-updated">
-                        <p>You have successfully declined to add your award to your backpack.</p>
-                    </div>
-                    {$content}
-EOHTML;
-            }
-        }
-        elseif ($award_status == 'Awarded')
+        if ($award_status == 'Awarded')
         {
             $badge_title = esc_html( get_the_title( get_post_meta( $post_id, 'wpbadger-award-choose-badge', true ) ) );
 
             $content = <<<EOHTML
+                <div id="wpbadger-award-actions-wrap">
                 <div id="wpbadger-award-actions" class="wpbadger-award-notice">
                     <p>Congratulations! The "{$badge_title}" badge has been awarded to you.</p>
                     <p>Please choose to <a href='#' class='acceptBadge'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the award.</p>
@@ -170,6 +172,7 @@ EOHTML;
                 </div>
                 <div id="wpbadger-award-actions-errors" class="wpbadger-award-error">
                     <p>An error occured while adding this badge to your backpack.</p>
+                </div>
                 </div>
                 {$content}
 EOHTML;
@@ -370,10 +373,9 @@ EOHTML;
 
             wp_enqueue_script( 'wpbadger-awards', plugins_url( 'js/awards.js', dirname( __FILE__ ) ), array( 'jquery' ) );
             wp_localize_script( 'wpbadger-awards', 'WPBadger_Awards', array(
+                'ajaxurl'       => admin_url( 'admin-ajax.php' ),
                 'assertion_url' => add_query_arg( 'json', '1', get_permalink() ),
-                'accept_url'    => add_query_arg( 'accept', '1', get_permalink() ),
-                'reject_url'    => add_query_arg( 'reject', '1', get_permalink() ),
-                'redirect_url'  => get_permalink(),
+                'award_id'      => get_the_ID()
             ) );
         }
     }

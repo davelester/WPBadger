@@ -23,13 +23,17 @@ jQuery(function ($) {
 
       if (successes.length > 0) {
         $('#wpbadger-award-actions').hide();
-        $.ajax({
-          url: WPBadger_Awards.accept_url,
-          type: 'POST',
-          success: function(data, textStatus) {
-            window.location.href = WPBadger_Awards.redirect_url;
+        $.post(
+          WPBadger_Awards.ajaxurl,
+          {
+            action: 'wpbadger_award_ajax',
+            award_id: WPBadger_Awards.award_id,
+            award_action: 'accept'
+          },
+          function (data, textStatus) {
+            $('#wpbadger-award-actions-wrap').html( data );
           }
-        });
+        );
       }
     });
   });
@@ -37,13 +41,17 @@ jQuery(function ($) {
   // Function that rejects the badge
   $('.rejectBadge').click( function (event) {
     event.preventDefault();
-    $.ajax({
-      url: WPBadger_Awards.reject_url,
-      type: 'POST',
-      success: function (data, textStatus) {
-        window.location.href = WPBadger_Awards.redirect_url;
+    $.post(
+      WPBadger_Awards.ajaxurl,
+      {
+        action: 'wpbadger_award_ajax',
+        award_id: WPBadger_Awards.award_id,
+        award_action: 'reject'
+      },
+      function (data, textStatus) {
+        $('#wpbadger-award-actions-wrap').html( data );
       }
-    });
+    );
   });
 });
 
