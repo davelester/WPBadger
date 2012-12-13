@@ -588,7 +588,7 @@ EOHTML;
         {
             echo '<select name="wpbadger-award-choose-badge" id="wpbadger-award-choose-badge">';
 
-            $query = new WP_Query( array( 'post_type' => 'badge' ) );
+            $query = new WP_Query( array( 'post_type' => 'badge', 'nopaging' => true ) );
             while ($query->next_post())
             {
                 $badge_id = $query->post->ID;

@@ -9,6 +9,7 @@ function wpbadger_badge_get_awards_stats()
     $query = new WP_Query( array(
         'post_type'     => 'award',
         'post_status'   => 'publish',
+        'nopaging'      => true,
         'meta_query' => array(
             array(
                 'key'   => 'wpbadger-award-choose-badge',
@@ -129,7 +130,8 @@ class WPBadger_Badges_Stats_List_Table extends WP_List_Table
         # If we are sorting by title, do the sorting in the database
         $args = array(
             'post_type'     => 'badge',
-            'post_status'   => 'publish'
+            'post_status'   => 'publish',
+            'nopaging'      => true
         );
         if ($this->sort_key == 'title')
         {
@@ -153,7 +155,8 @@ class WPBadger_Badges_Stats_List_Table extends WP_List_Table
         # the stats array
         $query = new WP_Query( array(
             'post_type'     => 'award',
-            'post_status'   => 'publish'
+            'post_status'   => 'publish',
+            'nopaging'      => true
         ) );
         while ($query->next_post())
         {

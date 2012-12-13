@@ -26,7 +26,7 @@ require_once( dirname(__FILE__) . '/includes/badges_stats.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
 
 global $wpbadger_db_version;
-$wpbadger_db_version = "0.7.0";
+$wpbadger_db_version = "0.7.1";
 
 function wpbadger_activate()
 {
@@ -172,6 +172,7 @@ wpbadger_admin_header('Manage Awarded Badges');
                 $query = new WP_Query( array(
                     'post_type'     => 'badge',
                     'post_status'   => 'publish',
+                    'nopaging'      => true,
                     'meta_query' => array(
                         array(
                             'key'   => 'wpbadger-badge-valid',
@@ -327,10 +328,10 @@ if ($_POST['save']) {
     echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
 } elseif ($_POST['update_db']) {
     $old_db_version = get_option( 'wpbadger_db_version' );
-    if (empty( $old_db_version ) || ($old_db_version == '0.6.2')) {
+    if (empty( $old_db_version ) || ($old_db_version == '0.6.2') || ($old_db_version == '0.7.0')) {
         global $wpbadger_award_schema, $wpbadger_badge_schema;
 
-        $query = new WP_Query( array( 'post_type' => $wpbadger_badge_schema->get_post_type_name() ) );
+        $query = new WP_Query( array( 'post_type' => $wpbadger_badge_schema->get_post_type_name(), 'nopaging' => true ) );
         while ($query->next_post())
         {
             # Migrate the post_content to the description metadata
@@ -341,7 +342,7 @@ if ($_POST['save']) {
             $wpbadger_badge_schema->save_post_validate( $query->post->ID, $query->post );
         }
 
-        $query = new WP_Query( array( 'post_type' => $wpbadger_award_schema->get_post_type_name() ) );
+        $query = new WP_Query( array( 'post_type' => $wpbadger_award_schema->get_post_type_name(), 'nopaging' => true ) );
         while ($query->next_post())
             $wpbadger_award_schema->save_post_validate( $query->post->ID, $query->post );
 
