@@ -403,6 +403,9 @@ class WPBadger_Badge_Schema
      */
     function save_post_validate( $post_id, $post )
     {
+        if ($post->post_type != $this->get_post_type_name())
+            return;
+
         $valid = $this->check_valid( $post_id, $post );
 
         update_post_meta( $post_id, 'wpbadger-badge-valid', $valid[ 'all' ] );
