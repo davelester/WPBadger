@@ -45,6 +45,9 @@ class WPbadger_Award_Schema {
         add_filter( 'name_save_pre', array( $this, 'save_slug' ) );
         
         add_filter( 'the_content', array( $this, 'content_filter' ) );
+
+        add_filter( 'display_post_states', array( $this, 'display_post_states' ) );
+        add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 	}
 
     // Accessors and Mutators
@@ -208,7 +211,7 @@ EOHTML;
                 </script>
 
                 <div class="wpbadger-award-notice">
-                    <p>Congratulations! The "{$badge_title}" badge has been awarded.</p>
+                    <p>Congratulations! The "{$badge_title}" badge has been awarded to you.</p>
                     <p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the award.</p>
                 </div>
                 {$content}
@@ -393,7 +396,7 @@ EOHTML;
 
         $json = get_query_var( 'json' );
 
-        if (get_query_var( 'json' ))
+        if ($json)
             return dirname( __FILE__ ) . '/awards_json.php';
 
         return $template;
@@ -425,6 +428,95 @@ EOHTML;
             $slug = rand( 100000000000000, 999999999999999 );
 
         return $slug;
+    }
+
+    /**
+     * Display admin notices about invalid posts.
+     */
+    function admin_notices()
+    {
+        global $pagenow, $post;
+
+        if ($pagenow != 'post.php')
+            return;
+        if (get_post_type() != $this->get_post_type_name())
+            return;
+        if (get_post_status() != 'publish')
+            return;
+
+        $valid = $this->check_valid( $post->ID, $post );
+
+        if (!$valid[ 'evidence' ])
+            echo '<div class="error"><p>'.__("You must specify award evidence.", 'wpbadger').'</p></div>';
+        if (!$valid[ 'badge' ])
+            echo '<div class="error"><p>'.__("You must choose a badge.", 'wpbadger').'</p></div>';
+        if (!$valid[ 'email' ])
+            echo '<div class="error"><p>'.__("You must enter an email address for the award.", 'wpbadger').'</p></div>';
+    }
+
+    /**
+     * Checks that an award post is valid. Returns an array with the parts checked, and
+     * an overall results. Array keys:
+     *
+     * - evidence
+     * - email
+     * - badge
+     * - status
+     * - all
+     *
+     * @return array
+     */
+    function check_valid( $post_id, $post = null )
+    {
+        if (is_null( $post ))
+            $post = get_post( $post_id );
+
+        $rv = array(
+            'evidence'      => false,
+            'email'         => false,
+            'badge'         => false,
+            'status'        => false
+        );
+
+        # Check that the evidence is not empty. We're going to
+        # strip the tags and spaces just to make sure that it isn't
+        # empty
+        $evidence = trim( strip_tags( $post->post_content ) );
+        if (!empty( $evidence ))
+            $rv[ 'evidence' ] = true;
+
+        $email = get_post_meta( $post_id, 'wpbadger-award-email-address', true );
+        if (!empty( $email ) && is_email( $email ))
+            $rv[ 'email' ] = true;
+
+        $badge = get_post_meta( $post_id, 'wpbadger-award-choose-badge', true );
+        if (!empty( $badge ))
+            $rv[ 'badge' ] = true;
+
+        if ($post->post_status == 'publish')
+            $rv[ 'status' ] = true;
+
+        $rv[ 'all' ] = $rv[ 'evidence' ] && $rv[ 'email' ] && $rv[ 'badge' ] && $rv[ 'status' ];
+
+        return $rv;
+    }
+
+    /**
+     * If the award is invalid, add it to the list of post states.
+     */
+    function display_post_states( $post_states )
+    {
+        if (get_post_type() != $this->get_post_type_name())
+            return $post_states;
+
+        if (get_post_status() == 'publish')
+        {
+            $valid = get_post_meta( get_the_ID(), 'wpbadger-award-valid', true );
+            if (!$valid)
+                $post_states[ 'wpbadger-award-state' ] = '<span class="wpbadger-award-state-invalid">'.__( "Invalid", 'wpbadger' ).'</span>';
+        }
+
+        return $post_states;
     }
 
     function manage_posts_columns( $defaults )
@@ -544,6 +636,7 @@ EOHTML;
         add_action( 'add_meta_boxes', array( $this, 'meta_boxes_add' ) );
 
         add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
+        add_action( 'save_post', array( $this, 'save_post_validate' ), 99, 2 );
     }
 
     function save_post( $post_id, $post )
@@ -595,6 +688,13 @@ EOHTML;
         }
     }
 
+    function save_post_validate( $post_id, $post )
+    {
+        $valid = $this->check_valid( $post_id, $post );
+
+        update_post_meta( $post_id, 'wpbadger-award-valid', $valid[ 'all' ] );
+    }
+
     function save_slug( $slug )
     {
         if ($_POST[ 'post_type' ] == $this->get_post_type_name())
@@ -617,14 +717,15 @@ EOHTML;
         // Verify that post has been published, and is an award
         if (get_post_type( $post_id ) != $this->get_post_type_name())
             return;
-        if (get_post_status( $post_id ) != 'publish')
+        if (!get_post_meta( $post_id, 'wpbadger-award-valid', true ))
             return;
         if (get_post_meta( $post_id, 'wpbadger-award-status', true ) != 'Awarded')
             return;
 
-
-        $email_address = get_post_meta( $post_id, 'wpbadger-award-email-address', true );
         $badge = get_the_title( get_post_meta( $post_id, 'wpbadger-award-choose-badge', true ) );
+        $email_address = get_post_meta( $post_id, 'wpbadger-award-email-address', true );
+        if (get_post_meta( $post_id, 'wpbadger-award-email-sent', true ) != $email_address)
+            return;
 
         $post_title = get_the_title( $post_id );
         $post_url = get_permalink( $post_id );
@@ -637,6 +738,7 @@ EOHTML;
         $message .= $post_url . "\n\n";
 
         wp_mail( $email_address, $subject, $message );
+        update_post_meta( $post_id, 'wpbadger-award-email-sent', $email_address );
     }
 }
 
