@@ -173,19 +173,25 @@ EOHTML;
                     $('.js-required').hide();
 
                     if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){  //The Issuer API isn't supported on MSIE browsers
-                        $('.backPackLink').hide();
-                        $('.login-info').hide();
-                        $('.browserSupport').show();
+                        $('#wpbadger-award-actions').hide();
+                        $('#wpbadger-award-browser-support').show();
                     }
 
                     // Function that issues the badge
-                    $('.backPackLink').click(function() {
+                    $('.acceptBadge').click( function (event) {
                         var assertionUrl = '{$url}json=1';
-                        OpenBadges.issue([''+assertionUrl+''], function(errors, successes) {					
+
+                        event.preventDefault();
+                        OpenBadges.issue( [''+assertionUrl+''], function (errors, successes) {					
+                            if (errors.length > 0) {
+                                var \$errorsdiv = $('#wpbadger-award-actions-errors');
+                                $.each( errors, function (idx, val) {
+                                    $('<p></p>').text( "Reason: " + val.reason ).appendTo( $errorsdiv );
+                                } );
+                            }
+
                             if (successes.length > 0) {
-                                $('.backPackLink').hide();
-                                $('.login-info').hide();
-                                $('#badgeSuccess').show();
+                                $('#wpbadger-award-actions').hide();
                                 $.ajax({
                                     url: '{$url}accept=1',
                                     type: 'POST',
@@ -198,11 +204,12 @@ EOHTML;
                     });
 
                     // Function that rejects the badge
-                    $('.rejectBadge').click(function() {
+                    $('.rejectBadge').click( function (event) {
+                        event.preventDefault();
                         $.ajax({
                             url: '{$url}reject=1',
                             type: 'POST',
-                            success: function(data, textStatus) {
+                            success: function (data, textStatus) {
                                 window.location.href = '{$url}';
                             }
                         });
@@ -210,9 +217,15 @@ EOHTML;
                 });
                 </script>
 
-                <div class="wpbadger-award-notice">
+                <div id="wpbadger-award-actions" class="wpbadger-award-notice">
                     <p>Congratulations! The "{$badge_title}" badge has been awarded to you.</p>
-                    <p>Please choose to <a href='#' class='backPackLink'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the award.</p>
+                    <p>Please choose to <a href='#' class='acceptBadge'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the award.</p>
+                </div>
+                <div id="wpbadger-award-browser-support" class="wpbadger-award-error">
+                    <p>Microsoft Internet Explorer is not supported at this time. Please use Firefox or Chrome to retrieve your award.</p>
+                </div>
+                <div id="wpbadger-award-actions-errors" class="wpbadger-award-error">
+                    <p>An error occured while adding this badge to your backpack.</p>
                 </div>
                 {$content}
 EOHTML;

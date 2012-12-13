@@ -1,3 +1,7 @@
+#wpbadger-award-actions-errors, #wpbadger-award-browser-support {
+    display: none;
+}
+
 .wpbadger-award-updated, .wpbadger-award-notice, .wpbadger-award-error {
     margin: 5px 0 15px;
     padding: 0 0.6em;
