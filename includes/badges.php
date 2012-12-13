@@ -101,7 +101,8 @@ class WPBadger_Badge_Schema
 			'capability_type'   => $this->get_post_capability_type(),
 			'has_archive'       => true,
 			'hierarchical'      => false,
-			'supports'          => array( 'title', 'editor', 'thumbnail' )
+            'supports'          => array( 'title', 'editor', 'thumbnail' ),
+            'taxonomies'        => array( 'category' )
 		);
 
 		register_post_type( $this->get_post_type_name(), $args );
