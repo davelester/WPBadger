@@ -158,66 +158,9 @@ EOHTML;
         }
         elseif ($award_status == 'Awarded')
         {
-            // Pass query parameters differently based upon site permalink structure
-            if (get_option( 'permalink_structure' ) == '')
-                $url = get_permalink() . '&';
-            else
-                $url = get_permalink() . '?';
-
             $badge_title = esc_html( get_the_title( get_post_meta( $post_id, 'wpbadger-award-choose-badge', true ) ) );
 
             $content = <<<EOHTML
-                <script type='text/javascript'>
-                jQuery(function ($) {
-                    // Some js originally based on Badge it Gadget Lite https://github.com/Codery/badge-it-gadget-lite/blob/master/digital-badges/get-my-badge.php
-
-                    $('.js-required').hide();
-
-                    if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){  //The Issuer API isn't supported on MSIE browsers
-                        $('#wpbadger-award-actions').hide();
-                        $('#wpbadger-award-browser-support').show();
-                    }
-
-                    // Function that issues the badge
-                    $('.acceptBadge').click( function (event) {
-                        var assertionUrl = '{$url}json=1';
-
-                        event.preventDefault();
-                        OpenBadges.issue( [''+assertionUrl+''], function (errors, successes) {					
-                            if (errors.length > 0) {
-                                var \$errorsdiv = $('#wpbadger-award-actions-errors');
-                                $.each( errors, function (idx, val) {
-                                    $('<p></p>').text( "Reason: " + val.reason ).appendTo( $errorsdiv );
-                                } );
-                            }
-
-                            if (successes.length > 0) {
-                                $('#wpbadger-award-actions').hide();
-                                $.ajax({
-                                    url: '{$url}accept=1',
-                                    type: 'POST',
-                                    success: function(data, textStatus) {
-                                        window.location.href = '{$url}';
-                                    }
-                                });
-                            }
-                        });
-                    });
-
-                    // Function that rejects the badge
-                    $('.rejectBadge').click( function (event) {
-                        event.preventDefault();
-                        $.ajax({
-                            url: '{$url}reject=1',
-                            type: 'POST',
-                            success: function (data, textStatus) {
-                                window.location.href = '{$url}';
-                            }
-                        });
-                    });
-                });
-                </script>
-
                 <div id="wpbadger-award-actions" class="wpbadger-award-notice">
                     <p>Congratulations! The "{$badge_title}" badge has been awarded to you.</p>
                     <p>Please choose to <a href='#' class='acceptBadge'>accept</a> or <a href='#' class='rejectBadge'>decline</a> the award.</p>
@@ -421,7 +364,18 @@ EOHTML;
         if (get_post_type() != $this->get_post_type_name())
             return;
 
-        wp_enqueue_script( 'openbadges', 'http://beta.openbadges.org/issuer.js', array( 'jquery' ), null );
+        if (is_single())
+        {
+            wp_enqueue_script( 'openbadges', 'http://beta.openbadges.org/issuer.js', array( 'jquery' ), null );
+
+            wp_enqueue_script( 'wpbadger-awards', plugins_url( 'js/awards.js', dirname( __FILE__ ) ), array( 'jquery' ) );
+            wp_localize_script( 'wpbadger-awards', 'WPBadger_Awards', array(
+                'assertion_url' => add_query_arg( 'json', '1', get_permalink() ),
+                'accept_url'    => add_query_arg( 'accept', '1', get_permalink() ),
+                'reject_url'    => add_query_arg( 'reject', '1', get_permalink() ),
+                'redirect_url'  => get_permalink(),
+            ) );
+        }
     }
 
 
