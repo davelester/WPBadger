@@ -14,6 +14,7 @@ Author URI: http://www.davelester.org
 add_action('admin_init', 'wpbadger_admin_init');
 add_action('admin_head', 'wpbadger_admin_head');
 add_action('admin_menu', 'wpbadger_admin_menu');
+add_action('admin_notices', 'wpbadger_admin_notices');
 add_action('openbadges_shortcode', 'wpbadger_shortcode');
 register_activation_hook(__FILE__,'wpbadger_activate');
 register_deactivation_hook(__FILE__,'wpbadger_deactivate');
@@ -25,7 +26,7 @@ require_once( dirname(__FILE__) . '/includes/badges_stats.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
 
 global $wpbadger_db_version;
-$wpbadger_db_version = "0.6.2";
+$wpbadger_db_version = "0.7.0";
 
 function wpbadger_activate()
 {
@@ -88,6 +89,20 @@ function wpbadger_admin_menu()
         'wpbadger_bulk_award_badges',
         'wpbadger_bulk_award_badges'
     );
+}
+
+function wpbadger_admin_notices()
+{
+    global $wpbadger_db_version;
+
+    if ((get_option( 'wpbadger_db_version' ) != $wpbadger_db_version) && ($_POST[ 'wpbadger_db_version' ] != $wpbadger_db_version))
+    {
+        ?>
+        <div class="updated">
+            <p>WPBadger has been updated! Please go to the <a href="<?php echo admin_url( 'options-general.php?page=wpbadger_configure_plugin' ) ?>">configuration page</a> and update the database.</p>
+        </div>
+        <?php
+    }
 }
 
 function wpbadger_bulk_award_badges()
@@ -273,6 +288,8 @@ function wpbadger_shortcode()
 
 function wpbadger_configure_plugin()
 { 
+    global $wpbadger_db_version;
+
 	wpbadger_admin_header('Configure Plugin');
 ?>
 <h2>WPBadger Configuration</h2>
@@ -308,6 +325,29 @@ if ($_POST['save']) {
 	}
 
     echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
+} elseif ($_POST['update_db']) {
+    $old_db_version = get_option( 'wpbadger_db_version' );
+    if (empty( $old_db_version ) || ($old_db_version == '0.6.2')) {
+        global $wpbadger_award_schema, $wpbadger_badge_schema;
+
+        $query = new WP_Query( array( 'post_type' => $wpbadger_badge_schema->get_post_type_name() ) );
+        while ($query->next_post())
+        {
+            # Migrate the post_content to the description metadata
+            $desc = $wpbadger_badge_schema->get_post_description( $query->post->ID, $query->post );
+            update_post_meta( $query->post->ID, 'wpbadger-badge-description', $desc );
+
+            # Validate the post
+            $wpbadger_badge_schema->save_post_validate( $query->post->ID, $query->post );
+        }
+
+        $query = new WP_Query( array( 'post_type' => $wpbadger_award_schema->get_post_type_name() ) );
+        while ($query->next_post())
+            $wpbadger_award_schema->save_post_validate( $query->post->ID, $query->post );
+
+        update_option( 'wpbadger_db_version', $wpbadger_db_version );
+    }
+    echo "<div class='updated'><p>Database successfully updated</p></div>";
 }
 
 $issuer_disabled = (get_option('wpbadger_issuer_lock') && !is_super_admin()) ? 'disabled="disabled"' : '';
@@ -361,6 +401,11 @@ $issuer_disabled = (get_option('wpbadger_issuer_lock') && !is_super_admin()) ? '
     <input type="submit" class="button-primary" name="save" value="<?php _e('Save Changes') ?>" />
     </p>
 
+</form>
+
+<form method="POST" action="" name="wpbadger_db_update">
+<input type="hidden" name="wpbadger_db_version" value="<?php esc_attr_e( $wpbadger_db_version ) ?>" />
+<input type="submit" name="update_db" value="<?php _e('Update Database') ?>" />
 </form>
 </div>
 
