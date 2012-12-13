@@ -156,6 +156,8 @@ class WPBadger_Badge_Schema
             echo '<div class="error"><p>'.__("You must set a badge image that is a PNG file.", 'wpbadger').'</p></div>';
         if (!$valid[ 'description' ])
             echo '<div class="error"><p>'.__("You must enter a badge description.", 'wpbadger').'</p></div>';
+        if (!$valid[ 'description-length' ])
+            echo '<div class="error"><p>'.__("The description cannot be longer than 128 characters.", 'wpbadger').'</p></div>';
         if (!$valid[ 'criteria' ])
             echo '<div class="error"><p>'.__("You must enter the badge criteria.", 'wpbadger').'</p></div>';
     }
@@ -166,6 +168,7 @@ class WPBadger_Badge_Schema
      *
      * - image
      * - description
+     * - description-length
      * - criteria
      * - status
      * - all
@@ -180,6 +183,7 @@ class WPBadger_Badge_Schema
         $rv = array(
             'image'         => false,
             'description'   => false,
+            'description-length' => false,
             'criteria'      => false,
             'status'        => false
         );
@@ -201,15 +205,18 @@ class WPBadger_Badge_Schema
         $desc = get_post_meta( $post_id, 'wpbadger-badge-description', true );
         if (!empty( $desc ))
             $rv[ 'description' ] = true;
+        if (strlen( $desc ) <= 128)
+            $rv[ 'description-length' ] = true;
         
         # Check that the criteria is not empty.
-        if (!empty( $post->post_content ))
+        $criteria = trim( strip_tags( $post->post_content ) );
+        if (!empty( $criteria ))
             $rv[ 'criteria' ] = true;
 
         if ($post->post_status == 'publish')
             $rv[ 'status' ] = true;
 
-        $rv[ 'all' ] = $rv[ 'image' ] && $rv[ 'description' ] && $rv[ 'criteria' ] && $rv[ 'status' ];
+        $rv[ 'all' ] = $rv[ 'image' ] && $rv[ 'description' ] && $rv[ 'description-length' ] && $rv[ 'criteria' ] && $rv[ 'status' ];
 
         return $rv;
     }
