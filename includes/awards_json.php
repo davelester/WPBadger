@@ -27,21 +27,21 @@ if (empty( $issuer_contact ))
 
 ?>
 {
-  "recipient": "sha256$<?php echo hash( "sha256", ($email . $salt) ) ?>',
-  "salt": '<?php echo esc_js( $salt ) ?>',
-  "evidence": '<?php echo esc_js( $evidence ) ?>',
-  "issued_on": '<?php echo esc_js( $issued_on ) ?>',
+  "recipient": "sha256$<?php echo hash( "sha256", ($email . $salt) ) ?>",
+  "salt": "<?php echo esc_js( $salt ) ?>",
+  "evidence": "<?php echo esc_js( $evidence ) ?>",
+  "issued_on": "<?php echo esc_js( $issued_on ) ?>",
   "badge": {
-    "version": '<?php echo esc_js( $badge_version ) ?>',
-    "name": '<?php echo esc_js( $badge_title ) ?>',
-    "image": '<?php echo esc_js( $badge_image_url ) ?>',
-    "description": '<?php echo esc_js( $badge_desc ) ?>',
-    "criteria": '<?php echo esc_js( $badge_url ) ?>',
+    "version": "<?php echo esc_js( $badge_version ) ?>",
+    "name": "<?php echo esc_js( $badge_title ) ?>",
+    "image": "<?php echo esc_js( $badge_image_url ) ?>",
+    "description": "<?php echo esc_js( $badge_desc ) ?>",
+    "criteria": "<?php echo esc_js( $badge_url ) ?>",
     "issuer": {
-      "origin": '<?php echo esc_js( $issuer_origin_url ) ?>',
-      "name": '<?php echo esc_js( $issuer_name ) ?>',
-      "org": '<?php echo esc_js( $issuer_org ) ?>',
-      "contact": '<?php echo esc_js( $issuer_contact ) ?>'
+      "origin": "<?php echo esc_js( $issuer_origin_url ) ?>",
+      "name": "<?php echo esc_js( $issuer_name ) ?>",
+      "org": "<?php echo esc_js( $issuer_org ) ?>",
+      "contact": "<?php echo esc_js( $issuer_contact ) ?>"
     }
   }
 }
