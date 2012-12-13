@@ -740,7 +740,7 @@ EOHTML;
 
         $badge = get_the_title( get_post_meta( $post_id, 'wpbadger-award-choose-badge', true ) );
         $email_address = get_post_meta( $post_id, 'wpbadger-award-email-address', true );
-        if (get_post_meta( $post_id, 'wpbadger-award-email-sent', true ) != $email_address)
+        if (get_post_meta( $post_id, 'wpbadger-award-email-sent', true ) == $email_address)
             return;
 
         $post_title = get_the_title( $post_id );
