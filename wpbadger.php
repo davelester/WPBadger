@@ -26,7 +26,7 @@ require_once( dirname(__FILE__) . '/includes/badges_stats.php' );
 require_once( dirname(__FILE__) . '/includes/awards.php' );
 
 global $wpbadger_db_version;
-$wpbadger_db_version = "0.7.1";
+$wpbadger_db_version = "0.7.2";
 
 function wpbadger_activate()
 {
@@ -327,27 +327,31 @@ if ($_POST['save']) {
 
     echo "<div id='message' class='updated'><p>Options successfully updated</p></div>";
 } elseif ($_POST['update_db']) {
-    $old_db_version = get_option( 'wpbadger_db_version' );
-    if (empty( $old_db_version ) || ($old_db_version == '0.6.2') || ($old_db_version == '0.7.0')) {
-        global $wpbadger_award_schema, $wpbadger_badge_schema;
+    global $wpbadger_award_schema, $wpbadger_badge_schema;
 
-        $query = new WP_Query( array( 'post_type' => $wpbadger_badge_schema->get_post_type_name(), 'nopaging' => true ) );
-        while ($query->next_post())
-        {
-            # Migrate the post_content to the description metadata
-            $desc = $wpbadger_badge_schema->get_post_description( $query->post->ID, $query->post );
-            update_post_meta( $query->post->ID, 'wpbadger-badge-description', $desc );
+    $query = new WP_Query( array( 'post_type' => $wpbadger_badge_schema->get_post_type_name(), 'nopaging' => true ) );
+    while ($query->next_post())
+    {
+        # Migrate the post_content to the description metadata
+        $desc = $wpbadger_badge_schema->get_post_description( $query->post->ID, $query->post );
+        update_post_meta( $query->post->ID, 'wpbadger-badge-description', $desc );
 
-            # Validate the post
-            $wpbadger_badge_schema->save_post_validate( $query->post->ID, $query->post );
-        }
-
-        $query = new WP_Query( array( 'post_type' => $wpbadger_award_schema->get_post_type_name(), 'nopaging' => true ) );
-        while ($query->next_post())
-            $wpbadger_award_schema->save_post_validate( $query->post->ID, $query->post );
-
-        update_option( 'wpbadger_db_version', $wpbadger_db_version );
+        # Validate the post
+        $wpbadger_badge_schema->save_post_validate( $query->post->ID, $query->post );
     }
+
+    $query = new WP_Query( array( 'post_type' => $wpbadger_award_schema->get_post_type_name(), 'nopaging' => true ) );
+    while ($query->next_post())
+    {
+        $wpbadger_award_schema->save_post_validate( $query->post->ID, $query->post );
+        # We just have to assume here that if the award is published then
+        # an email was sent
+        if ($query->post->post_status == 'publish') 
+            update_post_meta( $query->post->ID, 'wpbadger-award-email-sent', get_post_meta( $query->post->ID, 'wpbadger-award-email-address', true ) );
+    }
+
+    update_option( 'wpbadger_db_version', $wpbadger_db_version );
+
     echo "<div class='updated'><p>Database successfully updated</p></div>";
 }
 
