@@ -78,6 +78,8 @@ function wpbadger_enqueue_scripts()
 
 function wpbadger_admin_menu()
 {
+    global $wpbadger_award_schema;
+
     $award_type = get_post_type_object('award');
 
 	add_submenu_page('options-general.php','Configure WPBadger Plugin','WPBadger Config','manage_options','wpbadger_configure_plugin','wpbadger_configure_plugin');
@@ -87,7 +89,7 @@ function wpbadger_admin_menu()
         'Bulk Award Badges',
         (get_option('wpbadger_bulk_awards_allow_all') ? $award_type->cap->edit_posts : 'manage_options'),
         'wpbadger_bulk_award_badges',
-        'wpbadger_bulk_award_badges'
+        array( $wpbadger_award_schema, 'bulk_award' )
     );
 }
 
@@ -105,131 +107,6 @@ function wpbadger_admin_notices()
     }
 }
 
-function wpbadger_bulk_award_badges()
-{
-wpbadger_admin_header('Manage Awarded Badges');
-?>
-
-<h2>Award Badges in Bulk</h2>
-
-<?php	
-	global $wpdb;
-
-	if ($_POST['publish']) {
-        if ($_REQUEST['wpbadger_award_choose_badge'] && $_REQUEST['wpbadger_award_email_address']) {
-            check_admin_referer( 'wpbadger_bulk_award_badges' );
-
-			$badge_id = $_REQUEST['wpbadger_award_choose_badge'];
-			$email_addresses = $_REQUEST['wpbadger_award_email_address'];
-			$evidence = $_REQUEST['wpbadger_award_evidence'];
-			$expires = $_REQUEST['wpbadger_award_expires'];
-
-			$email_addresses = preg_split('/[\n,]/', $email_addresses, -1, PREG_SPLIT_NO_EMPTY);
-	
-			foreach ($email_addresses as $email) {
-				$email = trim($email);
-
-				// Insert a new post for each award
-				$post = array(
-					'post_content' => $evidence,
-					'post_status' => 'publish',
-					'post_type' => 'award',
-					'post_title' => 'Badge Awarded: ' . get_the_title($badge_id),
-					'post_name' => wpbadger_award_generate_slug()
-				);
-
-				$post_id = wp_insert_post( $post, $wp_error );
-
-				update_post_meta($post_id, 'wpbadger-award-email-address', $email);
-				update_post_meta($post_id, 'wpbadger-award-choose-badge', $badge_id);
-				update_post_meta($post_id, 'wpbadger-award-expires', $expires);
-				update_post_meta($post_id, 'wpbadger-award-status','Awarded');
-				
-				// Send award email
-				wpbadger_award_send_email($post_id);
-			}
-			
-			echo "<div id='message' class='updated'><p>Badges were awarded successfully. You can view a list of <a href='" . get_bloginfo('wpurl') . "/wp-admin/edit.php?post_type=award'>all awards</a>.</p></div>";
-		} else {
-			echo "<div id='message' class='updated'><p>Badge award was unsuccessful. It is necessary to specify a badge and email address.</p></div>";
-		}
-	}
-?>
-
-    <form method="POST" action="" name="wpbadger_bulk_award_badges">
-        <?php wp_nonce_field( 'wpbadger_bulk_award_badges' ); ?>
-
-	    <table class="form-table">
-	        <tr valign="top">
-	        <th scope="row"><label for="wpbadger_award_choose_badge">Badge</label></th>
-	        <td>
-				<?php $choose_badge_meta = get_post_meta( $object->ID, 'wpbadger_award_choose_badge', true );?>
-
-				<p>
-				<select name="wpbadger_award_choose_badge" id="wpbadger_award_choose_badge">
-
-				<?php 	
-                $query = new WP_Query( array(
-                    'post_type'     => 'badge',
-                    'post_status'   => 'publish',
-                    'nopaging'      => true,
-                    'meta_query' => array(
-                        array(
-                            'key'   => 'wpbadger-badge-valid',
-                            'value' => true
-                        )
-                    )
-                ) );
-
-				while ( $query->have_posts() ) : $query->the_post();
-					$title_version = the_title(null, null, false) . " (" . get_post_meta(get_the_ID(), 'wpbadger-badge-version', true) . ")";
-
-					if ($choose_badge_meta == $title_version) { 
-						$selected = " selected";
-					} else {
-						$selected = "";
-					}
-					echo "<option name='wpbadger-award-choose-badge' value='" . get_the_ID() . "'". $selected . ">";					echo $title_version . "</option>";
-				endwhile;
-				?>
-
-				</select>
-	        </td>
-	        </tr>
-			
-	        <tr valign="top">
-			
-	        <th scope="row"><label for="wpbadger_award_email_address">Email Address</label></th>
-            <td>
-                <textarea name="wpbadger_award_email_address" id="wpbadger_award_email_address" rows="5" cols="45"></textarea>
-                <br />
-                Separate multiple email addresses with commas, or put one per line.
-            </td>
-	        </tr>
-
-	        <tr valign="top">
-	        <th scope="row"><label for="wpbadger_award_evidence">Evidence</label></th>
-	        <td><textarea name="wpbadger_award_evidence" id="wpbadger_award_evidence" class="large-text" rows="5" cols="45"></textarea></td>
-	        </tr>
-
-	        <tr valign="top">
-	        <th scope="row"><label for="wpbadger_award_expires">Expiration Date</label></th>
-            <td>
-                <input type="text" name="wpbadger_award_expires" id="wpbadger_award_expires" />
-                <br />
-                Optional. Enter as "YY-MM-DD".</td>
-	        </tr>
-	    </table>
-
-	    <p class="submit">
-	    <input type="submit" class="button-primary" name="publish" value="<?php _e('Publish') ?>" />
-	    </p>
-
-	</form>
-	</div>
-
-<?php
-}
 
 function wpbadger_admin_header($tab)
 {?>

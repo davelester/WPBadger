@@ -383,6 +383,11 @@ EOHTML;
 
     // Admin Filters and Actions
 
+    function _generate_title( $badge_id )
+    {
+        return sprintf( __( 'Badge Awarded: %1$s', 'wpbadger' ), get_the_title( $badge_id ) );
+    }
+
     // Generate the award slug. Shared by interface to award single badges, as well as bulk
     function _generate_slug()
     {
@@ -422,6 +427,164 @@ EOHTML;
             echo '<div class="error"><p>'.__("You must choose a badge.", 'wpbadger').'</p></div>';
         if (!$valid[ 'email' ])
             echo '<div class="error"><p>'.__("You must enter an email address for the award.", 'wpbadger').'</p></div>';
+    }
+
+    function bulk_award()
+    {
+        $badge_id           = intval( $_POST[ 'wpbadger-award-choose-badge' ] );
+        $email_addresses    = $_POST[ 'wpbadger-award-email-addresses' ];
+        $evidence           = $_POST[ 'content' ];
+        $expires            = $_POST[ 'wpbadger-award-expires' ];
+
+        if ($_POST[ 'publish' ])
+        {
+            check_admin_referer( 'wpbadger_bulk_award_badges' );
+
+            $errors = array();
+
+            if (empty( $badge_id ))
+                $errors[] = __( 'You must choose a badge to award.', 'wpbadger' );
+
+            $emails = array();
+            foreach (preg_split( '/[\n,]/', $email_addresses, -1, PREG_SPLIT_NO_EMPTY ) as $email)
+            {
+                $email = trim( $email );
+                if (!empty( $email ))
+                    $emails[] = $email;
+            }
+                
+            if (count( $emails ) == 0)
+                $errors[] = __( 'You must specify at least one email address.', 'wpbadger' );
+            else
+            {
+                foreach ($emails as $email)
+                {
+                    if (!is_email( $email ))
+                        $errors[] = sprintf( __( 'The email address "%1$s" is not valid.', 'wpbadger' ), $email );
+                }
+            }
+
+            $tmp = trim( strip_tags( $evidence ) );
+            if (empty( $tmp ))
+                $errors[] = __( 'You must enter some evidence for the awards.', 'wpbadger' );
+
+            if (count( $errors ) > 0)
+            {
+                foreach ($errors as $error)
+                {
+                    ?>
+                    <div class='error'><p><?php esc_html_e( $error ) ?></p></div>
+                    <?php
+                }
+            }
+            else
+            {
+                foreach ($emails as $email)
+                {
+                    // Usually this hook gets run for metaboxes only; add it here and we'll
+                    // get most of the metadata we need automatically
+                    add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
+                    $_POST[ 'wpbadger-award-email-address' ] = $email;
+
+                    // Insert a new post for each award
+                    $post = array(
+                        'post_content'  => $evidence,
+                        'post_status'   => 'publish',
+                        'post_type'     => $this->get_post_type_name(),
+                        'post_name'     => $this->_generate_slug()
+                    );
+
+                    $post_id = wp_insert_post( $post, $wp_error );
+                }
+
+                ?>
+                <div class="updated">
+                    <p>Badges were awarded successfully. You can view a list of
+                    <a href="<?php esc_attr_e( admin_url( 'edit.php?post_type=' . $this->get_post_type_name() ) ) ?>">all awards</a>.
+                    </p>
+                </div>
+                <?php
+
+                $badge_id           = 0;
+                $email_addresses    = '';
+                $evidence           = '';
+                $expires            = '';
+            }
+        }
+
+        ?>
+        <h2>Award Badges in Bulk</h2>
+
+        <div class="wrap">
+        <form method="POST" action="" name="wpbadger_bulk_award_badges">
+            <?php wp_nonce_field( 'wpbadger_bulk_award_badges' ); ?>
+            <?php wp_nonce_field( basename( __FILE__ ), 'wpbadger_award_nonce' ); ?>
+
+            <table class="form-table">
+                <tr valign="top">
+                <th scope="row"><label for="wpbadger_award_choose_badge">Badge</label></th>
+                <td>
+                    <select name="wpbadger-award-choose-badge" id="wpbadger_award_choose_badge">
+
+                    <?php 	
+                    $query = new WP_Query( array(
+                        'post_type'     => 'badge',
+                        'post_status'   => 'publish',
+                        'nopaging'      => true,
+                        'meta_query' => array(
+                            array(
+                                'key'   => 'wpbadger-badge-valid',
+                                'value' => true
+                            )
+                        )
+                    ) );
+
+                    while ($query->next_post())
+                    {
+                        $title_version = esc_html( get_the_title( $query->post->ID ) . " (" . get_post_meta( $query->post->ID, 'wpbadger-badge-version', true ) . ")" );
+
+                        $selected = '';
+                        if ($badge_id == $query->post->ID)
+                            $selected = ' selected="selected"';
+
+                        echo "<option value='{$query->post->ID}'{$selected}>{$title_version}</option>";
+                    }
+                    ?>
+
+                    </select>
+                </td>
+                </tr>
+
+                <tr valign="top">
+                <th scope="row"><label for="wpbadger_award_email_addresses">Email Address</label></th>
+                <td>
+                <textarea name="wpbadger-award-email-addresses" id="wpbadger_award_email_addresses" rows="5" cols="45"><?php echo esc_textarea( $email_addresses ) ?></textarea>
+                    <br />
+                    Separate multiple email addresses with commas, or put one per line.
+                </td>
+                </tr>
+
+                <tr valign="top">
+                <th scope="row"><label for="content">Evidence</label></th>
+                <td><?php wp_editor( $evidence, 'content' ) ?></td>
+                </tr>
+
+                <tr valign="top">
+                <th scope="row"><label for="wpbadger_award_expires">Expiration Date</label></th>
+                <td>
+                <input type="text" name="wpbadger-award-expires" id="wpbadger_award_expires" value="<?php esc_attr_e( $expires ) ?>" />
+                    <br />
+                    Optional. Enter as "YY-MM-DD".</td>
+                </tr>
+            </table>
+
+            <p class="submit">
+                <input type="submit" class="button-primary" name="publish" value="<?php _e('Publish') ?>" />
+            </p>
+
+        </form>
+        </div>
+        <?php
     }
 
     /**
@@ -646,6 +809,20 @@ EOHTML;
                 delete_post_meta( $post_id, $meta_key, $old_value );	
         }
 
+        $meta_key = 'wpbadger-award-expires';
+        $new_value = $_POST[ 'wpbadger-award-expires' ];
+        $old_value = get_post_meta( $post_id, $meta_key, true );
+
+        if ($new_value && empty( $old_value ))
+            add_post_meta( $post_id, $meta_key, $new_value, true );
+        elseif (current_user_can( 'manage_options' ))
+        {
+            if ($new_value && $new_value != $old_value)
+                update_post_meta( $post_id, $meta_key, $new_value );
+            elseif (empty( $new_value ))
+                delete_post_meta( $post_id, $meta_key, $old_value );	
+        }
+
         if (get_post_meta( $post_id, 'wpbadger-award-status', true ) == false)
             add_post_meta( $post_id, 'wpbadger-award-status', 'Awarded' );
 
@@ -669,7 +846,7 @@ EOHTML;
 
     function save_slug( $slug )
     {
-        if ($_POST[ 'post_type' ] == $this->get_post_type_name())
+        if ($_REQUEST[ 'post_type' ] == $this->get_post_type_name())
             return $this->_generate_slug();		
 
         return $slug;
@@ -680,7 +857,7 @@ EOHTML;
         if ($postarr[ 'post_type' ] != $this->get_post_type_name())
             return $data;
 
-        $data[ 'post_title' ] = __( "Badge Awarded: ", 'wpbadger' ) . get_the_title( $_POST['wpbadger-award-choose-badge'] );
+        $data[ 'post_title' ] = $this->_generate_title( $_POST[ 'wpbadger-award-choose-badge' ] );
         return $data;
     }
 
