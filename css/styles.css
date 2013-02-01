@@ -1,0 +1,29 @@
+#wpbadger-award-actions-errors, #wpbadger-award-browser-support {
+    display: none;
+}
+
+.wpbadger-award-updated, .wpbadger-award-notice, .wpbadger-award-error {
+    margin: 5px 0 15px;
+    padding: 0 0.6em;
+
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.wpbadger-award-updated p, .wpbadger-award-notice p, .wpbadger-award-error p {
+    margin: 0.5em 0;
+    padding: 2px;
+}
+
+.wpbadger-award-updated, .wpbadger-award-notice {
+    background-color: #FFFFE0;
+    border-color: #E6DB55;
+}
+
+.wpbadger-award-error {
+    background-color: #FFEBE8;
+    border-color: #C00;
+}
+
