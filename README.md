@@ -1,5 +1,9 @@
 # WPBadger
 
+## Notice
+
+WPBadger is no longer actively developed and maintained by the original author. Should you have an interest in becoming a maintainer, feel free to drop [@davelester](http://twitter.com/davelester) a line on Twitter.
+
 ## Overview
 WPBadger is a simple WordPress plugin for issuing badges and adding them to a user's [Open Badges](http://openbadges.org) backpack. Consider it [Open Badger](https://github.com/mozilla/OpenBadger/wiki)'s lighter-weight cousin.
 
